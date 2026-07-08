@@ -21,19 +21,19 @@ async function autoCapture() {
 
   // 1. Landing Page
   console.log('Capturing Landing Page...');
-  page.goto('http://localhost:5173/').catch(e => console.log('Navigation aborted (likely redirect)'));
+  page.goto('http://localhost:3000/').catch(e => console.log('Navigation aborted (likely redirect)'));
   await wait(3000);
   await page.screenshot({ path: path.join(SCREENSHOT_DIR, '01_landing_page.png'), fullPage: false });
 
   // 2. Login Page
   console.log('Capturing Login Page...');
-  page.goto('http://localhost:5173/login').catch(e => console.log('Navigation aborted (likely redirect)'));
+  page.goto('http://localhost:3000/login').catch(e => console.log('Navigation aborted (likely redirect)'));
   await wait(2000);
   await page.screenshot({ path: path.join(SCREENSHOT_DIR, '02_login_page.png'), fullPage: false });
 
   // 3. Register Page
   console.log('Capturing Register Page...');
-  page.goto('http://localhost:5173/register').catch(e => console.log('Navigation aborted (likely redirect)'));
+  page.goto('http://localhost:3000/register').catch(e => console.log('Navigation aborted (likely redirect)'));
   await wait(2000);
   await page.screenshot({ path: path.join(SCREENSHOT_DIR, '03_register_page.png'), fullPage: false });
 

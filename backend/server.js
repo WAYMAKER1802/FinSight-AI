@@ -10,7 +10,7 @@
 'use strict';
 
 const express       = require('express');
-const mongoose      = require('mongoose');
+
 const cors          = require('cors');
 const helmet        = require('helmet');
 const compression   = require('compression');
@@ -140,8 +140,9 @@ const startServer = async () => {
     const shutdown = async (signal) => {
       logger.info(`⚠️  ${signal} received — shutting down gracefully`);
       server.close(async () => {
-        await mongoose.connection.close();
-        logger.info('💤 MongoDB connection closed. Server terminated.');
+        const { sequelize } = require('./config/database');
+        await sequelize.close();
+        logger.info('💤 Database connection closed. Server terminated.');
         process.exit(0);
       });
     };

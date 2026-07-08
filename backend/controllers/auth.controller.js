@@ -50,7 +50,7 @@ exports.register = async (req, res, next) => {
     const { name, email, password, riskProfile, phone } = req.body;
 
     // Check if email already exists
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const existingUser = await User.findOne({ where: { email: email.toLowerCase() } });
     if (existingUser) {
       return next(new AppError('An account with this email already exists.', 409));
     }
@@ -102,7 +102,7 @@ exports.login = async (req, res, next) => {
       return next(new AppError('Email and password are required.', 400));
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+    const user = await User.findOne({ where: { email: email.toLowerCase() } });
     if (!user || !(await user.comparePassword(password))) {
       return next(new AppError('Invalid email or password.', 401));
     }
@@ -114,7 +114,7 @@ exports.login = async (req, res, next) => {
     // Update login audit
     user.lastLogin  = new Date();
     user.loginCount = (user.loginCount || 0) + 1;
-    await user.save({ validateBeforeSave: false });
+    await user.save();
 
     logger.info(`User logged in: ${user.email}`);
 
@@ -168,14 +168,14 @@ exports.refreshToken = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-    const user    = await User.findById(decoded.id);
+    const user    = await User.findByPk(decoded.id);
 
     if (!user || !user.isActive) {
       return next(new AppError('Invalid refresh token.', 401));
     }
 
-    const newAccessToken  = signAccessToken(user._id);
-    const newRefreshToken = signRefreshToken(user._id);
+    const newAccessToken  = signAccessToken(user.id);
+    const newRefreshToken = signRefreshToken(user.id);
 
     const cookieOptions = {
       httpOnly: true,
@@ -210,7 +210,7 @@ exports.refreshToken = async (req, res, next) => {
  */
 exports.getMe = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id).populate('portfolios', 'name totalCurrentValue');
+    const user = await User.findByPk(req.user.id); // Populate removed for demo
 
     res.status(200).json({
       success  : true,
@@ -235,7 +235,7 @@ exports.getMe = async (req, res, next) => {
 exports.forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
-    const user = await User.findOne({ email: email?.toLowerCase() });
+    const user = await User.findOne({ where: { email: email?.toLowerCase() } });
 
     // Always respond with same message to prevent email enumeration
     const successMessage = 'If that email exists, a reset link has been sent.';
@@ -245,14 +245,14 @@ exports.forgotPassword = async (req, res, next) => {
     }
 
     const resetToken = user.createPasswordResetToken();
-    await user.save({ validateBeforeSave: false });
+    await user.save();
 
     try {
       await emailService.sendPasswordReset(user.email, resetToken);
     } catch (err) {
-      user.passwordResetToken = undefined;
-      user.passwordResetExpires = undefined;
-      await user.save({ validateBeforeSave: false });
+      user.passwordResetToken = null;
+      user.passwordResetExpires = null;
+      await user.save();
       return next(new AppError('There was an error sending the email. Try again later!', 500));
     }
 
@@ -287,8 +287,9 @@ exports.resetPassword = async (req, res, next) => {
       .digest('hex');
 
     const user = await User.findOne({
-      passwordResetToken  : hashedToken,
-      passwordResetExpires: { $gt: Date.now() },
+      where: {
+        passwordResetToken  : hashedToken
+      }
     });
 
     if (!user) {
@@ -296,8 +297,8 @@ exports.resetPassword = async (req, res, next) => {
     }
 
     user.password            = req.body.password;
-    user.passwordResetToken  = undefined;
-    user.passwordResetExpires= undefined;
+    user.passwordResetToken  = null;
+    user.passwordResetExpires= null;
     await user.save();
 
     logger.info(`Password reset successful for: ${user.email}`);
@@ -321,7 +322,7 @@ exports.changePassword = async (req, res, next) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
-    const user = await User.findById(req.user._id).select('+password');
+    const user = await User.findByPk(req.user.id);
     if (!(await user.comparePassword(currentPassword))) {
       return next(new AppError('Current password is incorrect.', 401));
     }

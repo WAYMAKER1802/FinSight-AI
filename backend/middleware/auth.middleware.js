@@ -33,7 +33,7 @@ const protect = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Fetch user (check if still exists and is active)
-    const user = await User.findById(decoded.id).select('+emailVerified');
+    const user = await User.findByPk(decoded.id);
     if (!user) {
       return next(new AppError('User associated with this token no longer exists.', 401));
     }
@@ -78,7 +78,7 @@ const optionalAuth = async (req, res, next) => {
 
     if (token) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      const user    = await User.findById(decoded.id);
+      const user    = await User.findByPk(decoded.id);
       if (user && user.isActive) req.user = user;
     }
   } catch (_) {
@@ -144,8 +144,8 @@ const signRefreshToken = (userId) => {
  * Send tokens via cookie + response body.
  */
 const sendTokenResponse = (user, statusCode, res) => {
-  const accessToken  = signAccessToken(user._id);
-  const refreshToken = signRefreshToken(user._id);
+  const accessToken  = signAccessToken(user.id);
+  const refreshToken = signRefreshToken(user.id);
 
   const cookieOptions = {
     expires  : new Date(Date.now() + parseInt(process.env.JWT_COOKIE_EXPIRES_IN || 7) * 24 * 60 * 60 * 1000),
