@@ -424,7 +424,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 <div align="center">
 
-Built with ❤️ by the FinSight AI Team
+Built with ❤️ by the VarAvi
 
 **FinSight AI** — *Where AI meets Financial Intelligence*
 
