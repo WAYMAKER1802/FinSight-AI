@@ -1,0 +1,38 @@
+node_modules/
+dist/
+build/
+.env
+.env.local
+.env.production
+
+# Logs
+logs/*.log
+*.log
+npm-debug.log*
+
+# Uploads (keep directory structure)
+uploads/*.csv
+uploads/*.xlsx
+uploads/*.xls
+uploads/reports/*.pdf
+uploads/avatars/*
+!uploads/.gitkeep
+!uploads/reports/.gitkeep
+!uploads/avatars/.gitkeep
+
+# Coverage
+coverage/
+.nyc_output/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Misc
+.cache/
+tmp/
