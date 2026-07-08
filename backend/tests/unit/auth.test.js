@@ -9,20 +9,7 @@ const mongoose = require('mongoose');
 const app      = require('../../server');
 const User     = require('../../models/User.model');
 
-const MONGODB_URI = process.env.MONGODB_URI_TEST || 'mongodb://localhost:27017/finsight_ai_test';
-
-beforeAll(async () => {
-  await mongoose.connect(MONGODB_URI);
-});
-
-afterAll(async () => {
-  await User.deleteMany({});
-  await mongoose.disconnect();
-});
-
-afterEach(async () => {
-  await User.deleteMany({});
-});
+// Hooks are managed globally by setup.js
 
 // ── Register ─────────────────────────────────────────────────────────────────
 describe('POST /api/v1/auth/register', () => {

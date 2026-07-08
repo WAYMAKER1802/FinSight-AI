@@ -76,6 +76,7 @@
       "services/**/*.js",
       "helpers/**/*.js",
       "utils/**/*.js"
-    ]
+    ],
+    "setupFilesAfterEnv": ["<rootDir>/tests/setup.js"]
   }
 }

@@ -17,20 +17,24 @@ async function autoCapture() {
   });
   
   const page = await browser.newPage();
-  
+  const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
   // 1. Landing Page
   console.log('Capturing Landing Page...');
-  await page.goto('http://127.0.0.1:5173/', { waitUntil: 'networkidle2' });
+  page.goto('http://localhost:5173/').catch(e => console.log('Navigation aborted (likely redirect)'));
+  await wait(3000);
   await page.screenshot({ path: path.join(SCREENSHOT_DIR, '01_landing_page.png'), fullPage: false });
 
   // 2. Login Page
   console.log('Capturing Login Page...');
-  await page.goto('http://127.0.0.1:5173/login', { waitUntil: 'networkidle2' });
+  page.goto('http://localhost:5173/login').catch(e => console.log('Navigation aborted (likely redirect)'));
+  await wait(2000);
   await page.screenshot({ path: path.join(SCREENSHOT_DIR, '02_login_page.png'), fullPage: false });
 
   // 3. Register Page
   console.log('Capturing Register Page...');
-  await page.goto('http://127.0.0.1:5173/register', { waitUntil: 'networkidle2' });
+  page.goto('http://localhost:5173/register').catch(e => console.log('Navigation aborted (likely redirect)'));
+  await wait(2000);
   await page.screenshot({ path: path.join(SCREENSHOT_DIR, '03_register_page.png'), fullPage: false });
 
   await browser.close();
