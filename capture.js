@@ -20,17 +20,17 @@ async function autoCapture() {
   
   // 1. Landing Page
   console.log('Capturing Landing Page...');
-  await page.goto('http://127.0.0.1:3001/', { waitUntil: 'networkidle2' });
+  await page.goto('http://127.0.0.1:5173/', { waitUntil: 'networkidle2' });
   await page.screenshot({ path: path.join(SCREENSHOT_DIR, '01_landing_page.png'), fullPage: false });
 
   // 2. Login Page
   console.log('Capturing Login Page...');
-  await page.goto('http://127.0.0.1:3001/login', { waitUntil: 'networkidle2' });
+  await page.goto('http://127.0.0.1:5173/login', { waitUntil: 'networkidle2' });
   await page.screenshot({ path: path.join(SCREENSHOT_DIR, '02_login_page.png'), fullPage: false });
 
   // 3. Register Page
   console.log('Capturing Register Page...');
-  await page.goto('http://127.0.0.1:3001/register', { waitUntil: 'networkidle2' });
+  await page.goto('http://127.0.0.1:5173/register', { waitUntil: 'networkidle2' });
   await page.screenshot({ path: path.join(SCREENSHOT_DIR, '03_register_page.png'), fullPage: false });
 
   await browser.close();
