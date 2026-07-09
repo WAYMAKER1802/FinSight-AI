@@ -40,6 +40,10 @@ import RetirementPlanner from '@/pages/app/RetirementPlanner';
 import Settings         from '@/pages/app/Settings';
 import Profile          from '@/pages/app/Profile';
 import Recommendation   from '@/pages/app/Recommendation';
+import Watchlist        from '@/pages/app/Watchlist';
+import Orders           from '@/pages/app/Orders';
+import Positions        from '@/pages/app/Positions';
+import StockDetails     from '@/pages/app/StockDetails';
 import LoadingScreen    from '@/components/ui/LoadingScreen';
 
 // Auth store
@@ -128,6 +132,10 @@ function AppRoutes() {
           <Route path="settings"           element={<AnimatedPage><Settings /></AnimatedPage>} />
           <Route path="profile"            element={<AnimatedPage><Profile /></AnimatedPage>} />
           <Route path="recommendation"     element={<AnimatedPage><Recommendation /></AnimatedPage>} />
+          <Route path="watchlist"          element={<AnimatedPage><Watchlist /></AnimatedPage>} />
+          <Route path="orders"             element={<AnimatedPage><Orders /></AnimatedPage>} />
+          <Route path="positions"          element={<AnimatedPage><Positions /></AnimatedPage>} />
+          <Route path="stock/:symbol"      element={<AnimatedPage><StockDetails /></AnimatedPage>} />
         </Route>
 
         {/* 404 */}

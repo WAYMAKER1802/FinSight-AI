@@ -33,6 +33,7 @@ const connectDB = async () => {
     // Import all models so they register with sequelize before sync
     require('../models/User.model');
     require('../models/Portfolio.model');   // registers Portfolio, PortfolioAsset, PortfolioSnapshot
+    require('../models/Watchlist.model');
 
     // Sync all models
     await sequelize.sync({ alter: true });

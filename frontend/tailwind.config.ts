@@ -101,6 +101,7 @@ export default {
         'count-up'      : 'countUp 1.5s ease-out',
         'spin-slow'     : 'spin 8s linear infinite',
         'bounce-subtle' : 'bounceSubtle 2s ease-in-out infinite',
+        'marquee'       : 'marquee 60s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -138,6 +139,10 @@ export default {
         bounceSubtle: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%'     : { transform: 'translateY(-5px)' },
+        },
+        marquee: {
+          '0%': { transform: 'translateX(0%)' },
+          '100%': { transform: 'translateX(-100%)' },
         },
       },
       borderRadius: {

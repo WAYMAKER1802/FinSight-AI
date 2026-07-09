@@ -10,13 +10,16 @@ import {
 import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
 import AnimatedBackground from '@/components/AnimatedBackground';
+import TickerTape from '@/components/ui/TickerTape';
 
 const navItems = [
-  { group: 'Overview',
+  { group: 'Trading',
     items: [
-      { to: '/app/dashboard',  icon: LayoutDashboard, label: 'Dashboard'   },
-      { to: '/app/portfolio',  icon: PieChart,        label: 'Portfolio'   },
-      { to: '/app/analytics',  icon: BarChart3,       label: 'Analytics'   },
+      { to: '/app/live-market', icon: Activity,       label: 'Explore'     },
+      { to: '/app/portfolio',   icon: PieChart,       label: 'Holdings'    },
+      { to: '/app/positions',   icon: LayoutDashboard,label: 'Positions'   },
+      { to: '/app/orders',      icon: FileText,       label: 'Orders'      },
+      { to: '/app/watchlist',   icon: Target,         label: 'Watchlist'   },
     ]
   },
   { group: 'AI Features',
@@ -28,19 +31,14 @@ const navItems = [
       { to: '/app/personality-test', icon: Brain,        label: 'Investor Profile'                    },
     ]
   },
-  { group: 'Planning',
+  { group: 'Planning & Tools',
     items: [
+      { to: '/app/analytics',          icon: BarChart3,  label: 'Analytics'          },
       { to: '/app/goals',              icon: Target,     label: 'Goal Planner'       },
       { to: '/app/retirement-planner', icon: Sunset,     label: 'Retirement'         },
       { to: '/app/calculators',        icon: Calculator, label: 'Calculators'        },
-    ]
-  },
-  { group: 'Market',
-    items: [
-      { to: '/app/news',        icon: Newspaper,  label: 'News'          },
-      { to: '/app/live-market', icon: Activity,   label: 'Live Market', badge: 'Live' },
-      { to: '/app/invest',      icon: ShoppingBag,label: 'Invest'        },
-      { to: '/app/alerts',      icon: Bell,       label: 'Alerts', badge: '3' },
+      { to: '/app/news',               icon: Newspaper,  label: 'News'               },
+      { to: '/app/alerts',             icon: Bell,       label: 'Alerts', badge: '3' },
     ]
   },
   { group: 'Account',
@@ -149,7 +147,7 @@ export default function AppLayout() {
       <motion.aside
         animate={{ width: collapsed ? 64 : 240 }}
         transition={{ duration: 0.2, ease: 'easeInOut' }}
-        className="hidden md:flex flex-col bg-dark-900 border-r border-white/5 relative z-10 overflow-hidden flex-shrink-0"
+        className="hidden md:flex flex-col bg-dark-900 border-r border-white/5 relative z-10 flex-shrink-0"
       >
         <SidebarContent />
         {/* Collapse Toggle */}
@@ -177,22 +175,27 @@ export default function AppLayout() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
+        {/* Ticker Tape */}
+        <TickerTape />
+
         {/* Top Bar */}
         <header className="h-14 border-b border-white/5 bg-dark-900/50 backdrop-blur-sm flex items-center justify-between px-4 flex-shrink-0">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-6">
             <button onClick={() => setMobileOpen(true)} className="md:hidden btn-icon p-2">
               <Menu className="w-5 h-5" />
             </button>
-            {/* Breadcrumb */}
-            <div className="text-sm text-slate-400">
-              {location.pathname.split('/').filter(Boolean).map((seg, i, arr) => (
-                <span key={seg}>
-                  <span className={i === arr.length - 1 ? 'text-white font-medium capitalize' : 'capitalize'}>
-                    {seg.replace(/-/g, ' ')}
-                  </span>
-                  {i < arr.length - 1 && <span className="mx-1.5 text-slate-600">/</span>}
-                </span>
-              ))}
+            
+            {/* Asset Class Navigation (Desktop) */}
+            <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-400">
+              <NavLink to="/app/live-market" className={({ isActive }) => `hover:text-white transition-colors ${isActive ? 'text-white border-b-2 border-brand-500 py-4' : ''}`}>
+                Stocks
+              </NavLink>
+              <button className="hover:text-white transition-colors py-4">
+                F&O
+              </button>
+              <button className="hover:text-white transition-colors py-4">
+                Mutual Funds
+              </button>
             </div>
           </div>
 

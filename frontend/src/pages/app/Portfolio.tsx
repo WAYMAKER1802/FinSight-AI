@@ -336,15 +336,15 @@ export default function Portfolio() {
   };
 
   return (
-    <div className="space-y-6 max-w-screen-2xl">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 max-w-[1200px] mx-auto pb-10">
+      
+      {/* ── Header ───────────────────────────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-black font-display text-white">My Portfolio</h1>
-          <p className="text-slate-400 text-sm mt-0.5">
-            {p ? `${p.name} · ` : ''}
-            {p?.lastUpdated ? `Updated just now` : 'Last updated: never'}
-          </p>
+          <h1 className="text-2xl font-black font-display text-white flex items-center gap-2">
+            <PieChart className="w-6 h-6 text-brand-400" /> Holdings
+          </h1>
+          <p className="text-slate-400 text-sm mt-0.5">Track and analyze your investments.</p>
         </div>
         <div className="flex gap-2">
           <input type="file" ref={fileRef} accept=".csv,.xlsx,.xls" className="hidden" onChange={handleImport} />

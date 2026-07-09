@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Mail, Phone, Shield, TrendingUp, Edit3, Award, Camera, X, Loader2, Lock, ShieldCheck, Key } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
@@ -38,6 +38,8 @@ export default function Profile() {
   const { user, updateUser } = useAuthStore();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // mPIN Modal States
   const [mpinModal, setMpinModal] = useState<'setup' | 'reset' | 'disable' | null>(null);
@@ -99,8 +101,28 @@ export default function Profile() {
     }
   };
 
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    setIsUploading(true);
+    try {
+      const { user: updatedUser } = await userApi.uploadAvatar(formData);
+      updateUser(updatedUser);
+      toast.success('Avatar updated successfully');
+    } catch (error) {
+      console.error('Failed to update avatar', error);
+      toast.error('Failed to update avatar');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 w-full max-w-7xl mx-auto">
       <div>
         <h1 className="text-2xl font-black font-display text-white">My Profile</h1>
         <p className="text-slate-400 text-sm mt-0.5">Manage your personal information</p>
@@ -117,8 +139,19 @@ export default function Profile() {
                user?.name?.[0]?.toUpperCase() || 'A'
             )}
           </div>
-          <button className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-dark-800 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all">
-            <Camera className="w-3.5 h-3.5 text-slate-400" />
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleAvatarChange} 
+            accept="image/*" 
+            className="hidden" 
+          />
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-dark-800 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-all z-10 cursor-pointer"
+          >
+            {isUploading ? <Loader2 className="w-3.5 h-3.5 text-slate-400 animate-spin" /> : <Camera className="w-3.5 h-3.5 text-slate-400" />}
           </button>
         </div>
 

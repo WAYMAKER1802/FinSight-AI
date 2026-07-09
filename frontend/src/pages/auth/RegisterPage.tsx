@@ -17,6 +17,8 @@ const schema = z.object({
     .regex(/[A-Z]/, 'Must contain an uppercase letter')
     .regex(/[0-9]/, 'Must contain a number'),
   riskProfile: z.enum(['conservative', 'moderate', 'moderately_aggressive', 'aggressive']).optional(),
+  phone: z.string().min(10, 'Enter a valid phone number').optional().or(z.literal('')),
+  investmentHorizon: z.enum(['short_term', 'medium_term', 'long_term']).optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -37,7 +39,7 @@ export default function RegisterPage() {
 
   const { register, handleSubmit, watch, formState: { errors }, trigger } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { riskProfile: 'moderate' },
+    defaultValues: { riskProfile: 'moderate', investmentHorizon: 'long_term' },
   });
 
   const goToStep2 = async () => {
@@ -105,6 +107,17 @@ export default function RegisterPage() {
                   className={`input pl-10 ${errors.name ? 'border-rose-500/60' : ''}`} />
               </div>
               {errors.name && <p className="text-xs text-rose-400 mt-1">{errors.name.message}</p>}
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label className="label">Phone Number (Optional)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">📞</span>
+                <input {...register('phone')} type="tel" id="phone" placeholder="9876543210"
+                  className={`input pl-10 ${errors.phone ? 'border-rose-500/60' : ''}`} />
+              </div>
+              {errors.phone && <p className="text-xs text-rose-400 mt-1">{errors.phone?.message as string}</p>}
             </div>
 
             {/* Email */}
@@ -214,6 +227,32 @@ export default function RegisterPage() {
                   <span className="text-2xs text-slate-500 mt-0.5">{p.desc}</span>
                   {watch('riskProfile') === p.value && (
                     <CheckCircle2 className="absolute top-2 right-2 w-4 h-4 text-brand-400" />
+                  )}
+                </label>
+              ))}
+            </div>
+            <p className="text-sm text-slate-400 mt-6 mb-4">
+              What is your investment horizon?
+            </p>
+            <div className="grid grid-cols-1 gap-3">
+              {[
+                { value: 'short_term', label: 'Short-term', desc: '1 to 3 years' },
+                { value: 'medium_term', label: 'Medium-term', desc: '3 to 7 years' },
+                { value: 'long_term', label: 'Long-term', desc: '7+ years' }
+              ].map(p => (
+                <label key={p.value}
+                  className={`relative flex items-center p-4 rounded-xl border cursor-pointer transition-all ${
+                    watch('investmentHorizon') === p.value
+                      ? 'border-brand-500/60 bg-brand-500/10'
+                      : 'border-white/10 hover:border-white/20 bg-white/5'
+                  }`}>
+                  <input {...register('investmentHorizon')} type="radio" value={p.value} className="sr-only" />
+                  <div className="flex flex-col flex-1">
+                    <span className="text-sm font-semibold text-white">{p.label}</span>
+                    <span className="text-xs text-slate-500">{p.desc}</span>
+                  </div>
+                  {watch('investmentHorizon') === p.value && (
+                    <CheckCircle2 className="w-5 h-5 text-brand-400" />
                   )}
                 </label>
               ))}

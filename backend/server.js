@@ -45,6 +45,7 @@ const uploadRoutes       = require('./routes/upload.routes');
 const calculatorRoutes   = require('./routes/calculator.routes');
 const healthRoutes       = require('./routes/health.routes');
 const marketRoutes       = require('./routes/market.routes');
+const watchlistRoutes    = require('./routes/watchlist.routes');
 
 // ─── App Initialization ────────────────────────────────────────────────────
 const app  = express();
@@ -62,6 +63,7 @@ app.use(helmet({
     },
   },
   crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" },
 }));
 
 app.use(cors({
@@ -112,6 +114,7 @@ app.use(`${API}/upload`,      uploadRoutes);
 app.use(`${API}/calculators`, calculatorRoutes);
 app.use(`${API}/health`,      healthRoutes);
 app.use(`${API}/market`,      marketRoutes);
+app.use(`${API}/watchlist`,   watchlistRoutes);
 
 // ─── Root Health Check ─────────────────────────────────────────────────────
 app.get('/', (req, res) => {

@@ -69,7 +69,9 @@ exports.uploadAvatar = async (req, res, next) => {
   try {
     if (!req.file) return next(new AppError('No file provided', 400));
 
-    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const avatarUrl = `${baseUrl}/uploads/avatars/${req.file.filename}`;
+    
     const user = await User.findByPk(req.user.id);
     if (!user) return next(new AppError('User not found', 404));
     

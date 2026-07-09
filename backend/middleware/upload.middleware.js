@@ -8,10 +8,20 @@
 
 const multer = require('multer');
 const path   = require('path');
+const fs     = require('fs');
 const { AppError } = require('./errorHandler');
 
 const UPLOAD_PATH    = process.env.UPLOAD_PATH   || 'uploads/';
 const MAX_FILE_SIZE  = parseInt(process.env.MAX_FILE_SIZE, 10) || 10 * 1024 * 1024; // 10MB
+
+// Ensure directories exist
+if (!fs.existsSync(UPLOAD_PATH)) {
+  fs.mkdirSync(UPLOAD_PATH, { recursive: true });
+}
+const avatarPath = path.join(UPLOAD_PATH, 'avatars');
+if (!fs.existsSync(avatarPath)) {
+  fs.mkdirSync(avatarPath, { recursive: true });
+}
 
 // ── Storage Engine ──────────────────────────────────────────────────────────
 const storage = multer.diskStorage({
@@ -21,7 +31,7 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
     const ext          = path.extname(file.originalname).toLowerCase();
-    cb(null, `portfolio-${req.user?._id}-${uniqueSuffix}${ext}`);
+    cb(null, `portfolio-${req.user?.id}-${uniqueSuffix}${ext}`);
   },
 });
 
@@ -51,7 +61,7 @@ const avatarStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'uploads/avatars/'),
   filename   : (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, `avatar-${req.user?._id}${ext}`);
+    cb(null, `avatar-${req.user?.id}${ext}`);
   },
 });
 
