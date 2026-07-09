@@ -11,6 +11,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import TickerTape from '@/components/ui/TickerTape';
+import GlobalSearch from '@/components/ui/GlobalSearch';
 
 const navItems = [
   { group: 'Trading',
@@ -179,12 +180,17 @@ export default function AppLayout() {
         <TickerTape />
 
         {/* Top Bar */}
-        <header className="h-14 border-b border-white/5 bg-dark-900/50 backdrop-blur-sm flex items-center justify-between px-4 flex-shrink-0">
-          <div className="flex items-center gap-6">
+        <header className="h-14 border-b border-white/5 bg-dark-900/50 backdrop-blur-sm flex items-center justify-between px-4 flex-shrink-0 gap-4">
+          <div className="flex items-center gap-6 flex-1">
             <button onClick={() => setMobileOpen(true)} className="md:hidden btn-icon p-2">
               <Menu className="w-5 h-5" />
             </button>
             
+            {/* Global Search Bar */}
+            <div className="hidden md:block flex-1 max-w-xl">
+              <GlobalSearch />
+            </div>
+
             {/* Asset Class Navigation (Desktop) */}
             <div className="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-400">
               <NavLink to="/app/live-market" className={({ isActive }) => `hover:text-white transition-colors ${isActive ? 'text-white border-b-2 border-brand-500 py-4' : ''}`}>

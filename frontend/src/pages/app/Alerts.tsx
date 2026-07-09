@@ -1,7 +1,9 @@
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, BellOff, CheckCheck, Trash2, AlertTriangle, TrendingUp, Brain, Info } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-const alerts = [
+const initialAlerts = [
   { id: '1', type: 'ai_recommendation', icon: '🧠', title: 'AI Alert: INFY upgraded to BUY', message: 'AI analysis shows strong fundamentals after Q4 results beat estimates by 14%. Consider increasing allocation.', severity: 'info', time: '2h ago', read: false, symbol: 'INFY' },
   { id: '2', type: 'portfolio_rise',    icon: '📈', title: 'Portfolio up 2.3% today!',       message: 'Your Growth Portfolio gained ₹8,050 today, driven by HDFC Bank (+3.2%) and Reliance (+1.8%).', severity: 'success', time: '5h ago', read: false, symbol: null },
   { id: '3', type: 'rebalance',         icon: '⚖️', title: 'Rebalancing Recommended',       message: 'IT sector now at 44% of portfolio (recommended: <30%). Consider trimming TCS or INFY to reduce concentration risk.', severity: 'warning', time: '1d ago', read: false, symbol: 'TCS' },
@@ -18,7 +20,27 @@ const severityStyles: Record<string, string> = {
 };
 
 export default function Alerts() {
+  const [alerts, setAlerts] = useState(initialAlerts);
+  const navigate = useNavigate();
+  
   const unreadCount = alerts.filter(a => !a.read).length;
+
+  const markAllRead = () => {
+    setAlerts(alerts.map(a => ({ ...a, read: true })));
+  };
+
+  const clearRead = () => {
+    setAlerts(alerts.filter(a => !a.read));
+  };
+
+  const handleAlertClick = (alert: typeof initialAlerts[0]) => {
+    if (!alert.read) {
+      setAlerts(alerts.map(a => a.id === alert.id ? { ...a, read: true } : a));
+    }
+    if (alert.symbol) {
+      navigate(`/app/stock/${alert.symbol}`);
+    }
+  };
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -33,16 +55,30 @@ export default function Alerts() {
           <p className="text-slate-400 text-sm mt-0.5">AI-powered portfolio notifications</p>
         </div>
         <div className="flex gap-2">
-          <button className="btn-secondary text-xs gap-1.5 py-2"><CheckCheck className="w-4 h-4" /> Mark All Read</button>
-          <button className="btn-secondary text-xs gap-1.5 py-2"><Trash2 className="w-4 h-4 text-rose-400" /> Clear Read</button>
+          <button onClick={markAllRead} className="btn-secondary text-xs gap-1.5 py-2"><CheckCheck className="w-4 h-4" /> Mark All Read</button>
+          <button onClick={clearRead} className="btn-secondary text-xs gap-1.5 py-2"><Trash2 className="w-4 h-4 text-rose-400" /> Clear Read</button>
         </div>
       </div>
 
       <div className="space-y-3">
-        {alerts.map((alert, i) => (
-          <motion.div key={alert.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className={`rounded-xl p-4 flex gap-4 ${severityStyles[alert.severity]} ${!alert.read ? '' : 'opacity-60'}`}>
+        <AnimatePresence>
+          {alerts.length === 0 ? (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12 card-static">
+              <BellOff className="w-8 h-8 text-slate-500 mx-auto mb-3" />
+              <p className="text-slate-400">You're all caught up! No new alerts.</p>
+            </motion.div>
+          ) : (
+            alerts.map((alert, i) => (
+              <motion.div 
+                key={alert.id} 
+                layout
+                initial={{ opacity: 0, x: -20, height: 0 }} 
+                animate={{ opacity: 1, x: 0, height: 'auto' }}
+                exit={{ opacity: 0, scale: 0.9, height: 0, marginBottom: 0 }}
+                transition={{ delay: i * 0.05 }}
+                onClick={() => handleAlertClick(alert)}
+                className={`rounded-xl p-4 flex gap-4 cursor-pointer transition-all hover:bg-white/5 ${severityStyles[alert.severity]} ${!alert.read ? '' : 'opacity-60'}`}
+              >
             <span className="text-xl flex-shrink-0">{alert.icon}</span>
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
@@ -59,8 +95,10 @@ export default function Alerts() {
                 <span className="badge-brand text-2xs mt-2 inline-block">{alert.symbol}</span>
               )}
             </div>
-          </motion.div>
-        ))}
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

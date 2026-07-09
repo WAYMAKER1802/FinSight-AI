@@ -7,6 +7,7 @@ import {
   CheckCircle2, Play, Globe, Users, Award, DollarSign
 } from 'lucide-react';
 import AnimatedBackground from '@/components/AnimatedBackground';
+import TickerTape from '@/components/ui/TickerTape';
 
 // ── Feature Data ────────────────────────────────────────────────────────────
 const features = [
@@ -146,8 +147,12 @@ export default function LandingPage() {
       <AnimatedBackground />
 
       {/* ── Navbar ────────────────────────────────────────────────────────── */}
+      <div className="fixed top-0 left-0 right-0 z-[60]">
+        <TickerTape />
+      </div>
+      
       <motion.nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`fixed top-10 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled ? 'glass-dark border-b border-white/5 shadow-lg' : 'bg-transparent'
         }`}
         initial={{ y: -80 }}
@@ -216,7 +221,7 @@ export default function LandingPage() {
       </motion.nav>
 
       {/* ── Hero Section ──────────────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex items-center justify-center pt-20 pb-16 px-6">
+      <section className="relative min-h-screen flex items-center justify-center pt-40 pb-16 px-6">
         <ParticleField />
 
         {/* Background Gradients */}
@@ -368,86 +373,6 @@ export default function LandingPage() {
               </motion.div>
             </div>
           </motion.div>
-        </div>
-      </section>
-
-      {/* ── Stats Banner ──────────────────────────────────────────────────── */}
-      <section className="py-12 border-y border-white/5" style={{ background: 'rgba(15,23,42,0.6)' }}>
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="text-center"
-              >
-                <div className="flex justify-center mb-3 text-brand-400">{stat.icon}</div>
-                <div className="text-3xl font-black font-display gradient-text mb-1">{stat.value}</div>
-                <div className="text-xs text-slate-500 uppercase tracking-wider">{stat.label}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── Features Section ──────────────────────────────────────────────── */}
-      <section id="features" className="py-24 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-brand-500/30 bg-brand-500/10 text-brand-400 text-sm mb-5"
-            >
-              <Zap className="w-3.5 h-3.5" /> Powerful Features
-            </motion.div>
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="text-4xl md:text-5xl font-black font-display mb-4"
-            >
-              Everything you need to{' '}
-              <span className="gradient-text">invest smarter</span>
-            </motion.h2>
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="text-slate-400 text-lg max-w-2xl mx-auto"
-            >
-              InvestIQ AI packs 25+ powerful features that used to require a team of analysts,
-              into one intelligent platform.
-            </motion.p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className={`card p-6 bg-gradient-to-br ${feature.color} border ${feature.border} group`}
-              >
-                <div className={`w-12 h-12 rounded-xl ${feature.iconBg} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform`}>
-                  {feature.icon}
-                </div>
-                <h3 className="text-lg font-bold text-white mb-3 font-display">{feature.title}</h3>
-                <p className="text-sm text-slate-400 leading-relaxed">{feature.desc}</p>
-                <div className="mt-4 flex items-center gap-1 text-xs text-slate-500 group-hover:text-brand-400 transition-colors">
-                  Learn more <ChevronRight className="w-3 h-3" />
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
 

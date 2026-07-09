@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, Mail, Phone, Shield, TrendingUp, Edit3, Award, Camera, X, Loader2, Lock, ShieldCheck, Key } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
+import { usePortfolioStore } from '@/store/portfolioStore';
 import { userApi } from '@/api/user.api';
 import toast from 'react-hot-toast';
 
@@ -36,10 +37,15 @@ const investmentHorizonMap: Record<string, string> = {
 
 export default function Profile() {
   const { user, updateUser } = useAuthStore();
+  const { portfolios, fetchPortfolios } = usePortfolioStore();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetchPortfolios();
+  }, [fetchPortfolios]);
 
   // mPIN Modal States
   const [mpinModal, setMpinModal] = useState<'setup' | 'reset' | 'disable' | null>(null);
@@ -247,6 +253,51 @@ export default function Profile() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Portfolios & Assets */}
+      <div className="card-static p-5">
+        <h3 className="text-sm font-bold text-white mb-4 font-display">My Portfolios & Assets</h3>
+        {portfolios.length === 0 ? (
+          <p className="text-sm text-slate-400">No portfolios found. Go to Holdings to create one.</p>
+        ) : (
+          <div className="space-y-6">
+            {portfolios.map(p => (
+              <div key={p.id} className="bg-dark-800 rounded-xl border border-white/5 p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <h4 className="text-lg font-bold text-white">{p.name}</h4>
+                    <p className="text-xs text-slate-400">{p.assetCount || 0} Assets • Total Value: ₹{(p.totalCurrentValue || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</p>
+                  </div>
+                  <span className="badge-brand text-xs px-2 py-1 bg-brand-500/10 text-brand-400 rounded-md">
+                    {p.currency}
+                  </span>
+                </div>
+                
+                {p.assets && p.assets.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+                    {p.assets.map(asset => (
+                      <div key={asset.id} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-white">{asset.symbol}</span>
+                          <span className="text-xs text-slate-500 capitalize">{asset.type?.replace('_', ' ')}</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-semibold text-white">Qty: {asset.quantity}</div>
+                          <div className="text-xs text-emerald-400 font-semibold font-numeric">
+                            ₹{(asset.currentValue || 0).toLocaleString('en-IN')}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500 mt-2">No assets in this portfolio.</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Edit Profile Modal */}
