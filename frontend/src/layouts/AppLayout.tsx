@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
+import AnimatedBackground from '@/components/AnimatedBackground';
 
 const navItems = [
   { group: 'Overview',
@@ -21,6 +22,7 @@ const navItems = [
   { group: 'AI Features',
     items: [
       { to: '/app/ai-chat',         icon: MessageSquare, label: 'AI Coach',          badge: 'AI'      },
+      { to: '/app/recommendation',  icon: Sparkles,      label: 'AI Recommendation', badge: 'New'     },
       { to: '/app/risk-simulator',  icon: ShieldAlert,   label: 'Risk Simulator'                      },
       { to: '/app/wealth-score',    icon: Trophy,        label: 'Wealth Score'                        },
       { to: '/app/personality-test', icon: Brain,        label: 'Investor Profile'                    },
@@ -36,7 +38,7 @@ const navItems = [
   { group: 'Market',
     items: [
       { to: '/app/news',        icon: Newspaper,  label: 'News'          },
-      { to: '/app/market-mood', icon: Activity,   label: 'Market Mood'   },
+      { to: '/app/live-market', icon: Activity,   label: 'Live Market', badge: 'Live' },
       { to: '/app/alerts',      icon: Bell,       label: 'Alerts', badge: '3' },
     ]
   },
@@ -139,7 +141,8 @@ export default function AppLayout() {
   );
 
   return (
-    <div className="flex h-screen bg-dark-950 overflow-hidden">
+    <div className="flex h-screen bg-transparent overflow-hidden relative">
+      <AnimatedBackground />
 
       {/* Desktop Sidebar */}
       <motion.aside

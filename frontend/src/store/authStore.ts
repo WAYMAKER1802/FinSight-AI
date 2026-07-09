@@ -11,6 +11,9 @@ interface User {
   riskProfile: string;
   wealthScore: { score: number; level: string; badges: string[] };
   isPremium  : boolean;
+  phone?     : string;
+  investmentHorizon?: string;
+  mfaEnabled?: boolean;
 }
 
 interface AuthState {
@@ -19,10 +22,13 @@ interface AuthState {
   isAuthenticated : boolean;
   isLoading       : boolean;
 
-  login           : (email: string, password: string) => Promise<void>;
+  login           : (email: string, password: string) => Promise<{ requiresMPin: boolean; tempToken?: string }>;
+  verifyMPin      : (tempToken: string, pin: string) => Promise<void>;
+  googleLogin     : (token: string) => Promise<void>;
   register        : (data: { name: string; email: string; password: string; riskProfile?: string }) => Promise<void>;
   logout          : () => Promise<void>;
   setUser         : (user: User) => void;
+  updateUser      : (updates: Partial<User>) => void;
   initialize      : () => Promise<void>;
   initializeAuth  : () => Promise<void>;
 }
@@ -59,6 +65,26 @@ export const useAuthStore = create<AuthState>()(
 
       login: async (email, password) => {
         const response = await api.post('/auth/login', { email, password });
+        
+        if (response.data.requiresMPin) {
+          return { requiresMPin: true, tempToken: response.data.tempToken };
+        }
+
+        const { user, accessToken } = response.data;
+        api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+        set({ user, accessToken, isAuthenticated: true });
+        return { requiresMPin: false };
+      },
+
+      verifyMPin: async (tempToken, pin) => {
+        const response = await api.post('/auth/verify-mpin', { tempToken, pin });
+        const { user, accessToken } = response.data;
+        api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
+        set({ user, accessToken, isAuthenticated: true });
+      },
+
+      googleLogin: async (token) => {
+        const response = await api.post('/auth/google', { token });
         const { user, accessToken } = response.data;
         api.defaults.headers.common['Authorization'] = `Bearer ${accessToken}`;
         set({ user, accessToken, isAuthenticated: true });
@@ -78,6 +104,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       setUser: (user) => set({ user }),
+      updateUser: (updates) => set((state) => ({ user: state.user ? { ...state.user, ...updates } : null })),
     }),
     {
       name      : 'finsight-auth',

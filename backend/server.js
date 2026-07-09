@@ -44,6 +44,7 @@ const alertRoutes        = require('./routes/alert.routes');
 const uploadRoutes       = require('./routes/upload.routes');
 const calculatorRoutes   = require('./routes/calculator.routes');
 const healthRoutes       = require('./routes/health.routes');
+const marketRoutes       = require('./routes/market.routes');
 
 // ─── App Initialization ────────────────────────────────────────────────────
 const app  = express();
@@ -110,6 +111,7 @@ app.use(`${API}/alerts`,      alertRoutes);
 app.use(`${API}/upload`,      uploadRoutes);
 app.use(`${API}/calculators`, calculatorRoutes);
 app.use(`${API}/health`,      healthRoutes);
+app.use(`${API}/market`,      marketRoutes);
 
 // ─── Root Health Check ─────────────────────────────────────────────────────
 app.get('/', (req, res) => {

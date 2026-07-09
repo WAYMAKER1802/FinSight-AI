@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { User, Mail, Lock, Eye, EyeOff, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import toast from 'react-hot-toast';
+import { GoogleLogin } from '@react-oauth/google';
 
 const schema = z.object({
   name    : z.string().min(2, 'Name must be at least 2 characters'),
@@ -32,7 +33,7 @@ export default function RegisterPage() {
   const [loading,   setLoading]   = useState(false);
   const [step,      setStep]      = useState<1 | 2>(1);
   const navigate    = useNavigate();
-  const { register: registerUser } = useAuthStore();
+  const { register: registerUser, googleLogin } = useAuthStore();
 
   const { register, handleSubmit, watch, formState: { errors }, trigger } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -156,6 +157,41 @@ export default function RegisterPage() {
             <button type="button" onClick={goToStep2} id="next-step-btn" className="btn-primary w-full py-3 text-sm">
               Continue <ArrowRight className="w-4 h-4" />
             </button>
+
+            {/* Divider */}
+            <div className="my-6 flex items-center gap-3">
+              <div className="flex-1 divider" />
+              <span className="text-xs text-slate-600">or sign up with</span>
+              <div className="flex-1 divider" />
+            </div>
+
+            {/* OAuth Integration */}
+            <div className="flex justify-center w-full">
+              <GoogleLogin
+                onSuccess={async (credentialResponse) => {
+                  if (credentialResponse.credential) {
+                    setLoading(true);
+                    try {
+                      await googleLogin(credentialResponse.credential);
+                      toast.success('Google Sign-up successful! 🎉');
+                      navigate('/app/dashboard');
+                    } catch (err: any) {
+                      toast.error(err.response?.data?.message || 'Google Sign-up failed.');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }
+                }}
+                onError={() => {
+                  toast.error('Google Sign-up was unsuccessful or cancelled.');
+                }}
+                useOneTap
+                theme="filled_black"
+                shape="circle"
+                width="100%"
+                text="continue_with"
+              />
+            </div>
           </motion.div>
         )}
 

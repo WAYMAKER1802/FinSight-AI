@@ -32,12 +32,13 @@ import RiskSimulator    from '@/pages/app/RiskSimulator';
 import Calculators      from '@/pages/app/Calculators';
 import Reports          from '@/pages/app/Reports';
 import Alerts           from '@/pages/app/Alerts';
-import MarketMood       from '@/pages/app/MarketMood';
+import LiveMarket       from '@/pages/app/LiveMarket';
 import WealthScore      from '@/pages/app/WealthScore';
 import PersonalityTest  from '@/pages/app/PersonalityTest';
 import RetirementPlanner from '@/pages/app/RetirementPlanner';
 import Settings         from '@/pages/app/Settings';
 import Profile          from '@/pages/app/Profile';
+import Recommendation   from '@/pages/app/Recommendation';
 import LoadingScreen    from '@/components/ui/LoadingScreen';
 
 // Auth store
@@ -118,12 +119,13 @@ function AppRoutes() {
           <Route path="calculators"        element={<AnimatedPage><Calculators /></AnimatedPage>} />
           <Route path="reports"            element={<AnimatedPage><Reports /></AnimatedPage>} />
           <Route path="alerts"             element={<AnimatedPage><Alerts /></AnimatedPage>} />
-          <Route path="market-mood"        element={<AnimatedPage><MarketMood /></AnimatedPage>} />
+          <Route path="live-market"        element={<AnimatedPage><LiveMarket /></AnimatedPage>} />
           <Route path="wealth-score"       element={<AnimatedPage><WealthScore /></AnimatedPage>} />
           <Route path="personality-test"   element={<AnimatedPage><PersonalityTest /></AnimatedPage>} />
           <Route path="retirement-planner" element={<AnimatedPage><RetirementPlanner /></AnimatedPage>} />
           <Route path="settings"           element={<AnimatedPage><Settings /></AnimatedPage>} />
           <Route path="profile"            element={<AnimatedPage><Profile /></AnimatedPage>} />
+          <Route path="recommendation"     element={<AnimatedPage><Recommendation /></AnimatedPage>} />
         </Route>
 
         {/* 404 */}

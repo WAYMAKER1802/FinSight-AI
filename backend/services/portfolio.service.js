@@ -1,244 +1,231 @@
 /**
- * Portfolio Service
- * ──────────────────
- * Business logic for portfolio operations: price updates, scoring,
- * analytics calculation, and CSV/Excel import processing.
+ * Portfolio Service — Sequelize Edition
+ * ──────────────────────────────────────
+ * Business logic: price updates, metrics calculation, CSV/Excel import,
+ * diversification, health scoring, and alert generation.
  */
-
 'use strict';
 
 const axios     = require('axios');
 const Papa      = require('papaparse');
 const XLSX      = require('xlsx');
 const fs        = require('fs');
-const Portfolio = require('../models/Portfolio.model');
-const Alert     = require('../models/Alert.model');
-const helpers   = require('../helpers/calculators');
 const logger    = require('../config/logger');
+const helpers   = require('../helpers/calculators');
+const marketSvc = require('./market.service');
+const wealthSvc = require('./wealth.service');
 
-const ALPHA_VANTAGE_KEY = process.env.ALPHA_VANTAGE_API_KEY;
-const FINNHUB_KEY       = process.env.FINNHUB_API_KEY;
+// ─── Recalculate all portfolio metrics from its assets ────────────────────
+const recalculatePortfolioMetrics = (portfolio, assets) => {
+  if (!assets || assets.length === 0) {
+    return {
+      totalInvested    : 0, totalCurrentValue: 0, totalReturns: 0,
+      returnsPercent   : 0, dayPnl: 0, dayPnlPercent: 0,
+      healthScore      : 0, riskScore: 5, diversificationScore: 0,
+      sectorAllocation : JSON.stringify([]),
+      assetClassAllocation: JSON.stringify([]),
+    };
+  }
 
-/**
- * Fetch real-time price for a stock symbol.
- * Tries Finnhub first, falls back to Alpha Vantage.
- */
-const fetchStockPrice = async (symbol) => {
-  try {
-    const response = await axios.get('https://finnhub.io/api/v1/quote', {
-      params : { symbol: `NSE:${symbol}`, token: FINNHUB_KEY },
-      timeout: 5000,
+  const totalInvested    = assets.reduce((s, a) => s + (a.quantity * a.avgBuyPrice), 0);
+  const totalCurrentValue= assets.reduce((s, a) => s + (a.currentValue || a.quantity * a.avgBuyPrice), 0);
+  const totalReturns     = totalCurrentValue - totalInvested;
+  const returnsPercent   = totalInvested > 0 ? (totalReturns / totalInvested) * 100 : 0;
+
+  // Day P&L
+  const dayPnl = assets.reduce((s, a) => {
+    const prevValue = a.currentValue / (1 + (a.dayChangePct || 0) / 100);
+    return s + (a.currentValue - prevValue);
+  }, 0);
+  const dayPnlPercent = totalCurrentValue > 0 ? (dayPnl / totalCurrentValue) * 100 : 0;
+
+  // Allocation percentages
+  if (totalCurrentValue > 0) {
+    assets.forEach(a => {
+      a.allocationPct   = (a.currentValue / totalCurrentValue) * 100;
+      a.investedAmount  = a.quantity * a.avgBuyPrice;
+      a.absoluteReturn  = a.currentValue - a.investedAmount;
+      a.percentageReturn= a.investedAmount > 0 ? (a.absoluteReturn / a.investedAmount) * 100 : 0;
     });
-    const d = response.data;
-    if (d.c) {
-      return {
-        symbol,
-        currentPrice : d.c,
-        dayChange    : d.d,
-        dayChangePct : d.dp,
-        high52       : d.h,
-        low52        : d.l,
-        prevClose    : d.pc,
-        timestamp    : new Date().toISOString(),
-      };
-    }
-  } catch (_) {}
+  }
 
-  // Fallback: simulate price (dev mode)
+  // Sector allocation
+  const sectorMap = {};
+  assets.forEach(a => {
+    const s = a.sector || 'Others';
+    if (!sectorMap[s]) sectorMap[s] = 0;
+    sectorMap[s] += a.currentValue || 0;
+  });
+  const sectorAllocation = Object.entries(sectorMap)
+    .map(([sector, value]) => ({
+      sector,
+      value     : Math.round(value),
+      percentage: totalCurrentValue > 0 ? Math.round((value / totalCurrentValue) * 1000) / 10 : 0,
+    }))
+    .sort((a, b) => b.percentage - a.percentage);
+
+  // Asset class allocation
+  const classMap = {};
+  assets.forEach(a => {
+    const c = a.type || 'other';
+    if (!classMap[c]) classMap[c] = 0;
+    classMap[c] += a.currentValue || 0;
+  });
+  const assetClassAllocation = Object.entries(classMap)
+    .map(([assetClass, value]) => ({
+      assetClass,
+      value     : Math.round(value),
+      percentage: totalCurrentValue > 0 ? Math.round((value / totalCurrentValue) * 1000) / 10 : 0,
+    }));
+
+  // Diversification score
+  const allocations = assets.map(a => a.allocationPct || 0);
+  const diversificationScore = helpers.diversificationScore(allocations);
+
+  // Risk score (avg of asset risk scores)
+  const riskScore = assets.length > 0
+    ? Math.round(assets.reduce((s, a) => s + (a.riskScore || 5), 0) / assets.length * 10) / 10
+    : 5;
+
+  // Health score
+  const healthScore = helpers.portfolioHealthScore({
+    diversificationScore,
+    returnsVsBenchmark: Math.max(0, returnsPercent / 100),
+    riskScore,
+    goalAlignment     : 60,
+  });
+
+  // CAGR (approximate — use months from first buy)
+  const firstBuyDates = assets.map(a => a.firstBuyDate).filter(Boolean).sort();
+  let cagr = 0;
+  if (firstBuyDates.length > 0) {
+    const years = (Date.now() - new Date(firstBuyDates[0])) / (365.25 * 24 * 3600 * 1000);
+    if (years > 0.08 && totalInvested > 0) {
+      cagr = Math.round(helpers.cagr(totalInvested, totalCurrentValue, years) * 100) / 100;
+    }
+  }
+
+  // Sharpe (rough estimate)
+  const annualReturn = returnsPercent;
+  const riskFreeRate = 6.5; // RBI 10Y bond approx
+  const volatility   = 18 + riskScore * 2; // estimated
+  const sharpeRatio  = Math.round((annualReturn - riskFreeRate) / volatility * 100) / 100;
+
   return {
-    symbol,
-    currentPrice : Math.round(1000 + Math.random() * 4000),
-    dayChange    : Math.round((Math.random() * 100 - 50) * 10) / 10,
-    dayChangePct : Math.round((Math.random() * 4 - 2) * 100) / 100,
-    timestamp    : new Date().toISOString(),
+    totalInvested    : Math.round(totalInvested * 100) / 100,
+    totalCurrentValue: Math.round(totalCurrentValue * 100) / 100,
+    totalReturns     : Math.round(totalReturns * 100) / 100,
+    returnsPercent   : Math.round(returnsPercent * 100) / 100,
+    dayPnl           : Math.round(dayPnl * 100) / 100,
+    dayPnlPercent    : Math.round(dayPnlPercent * 100) / 100,
+    healthScore,
+    riskScore,
+    diversificationScore,
+    cagr,
+    sharpeRatio,
+    sectorAllocation    : JSON.stringify(sectorAllocation),
+    assetClassAllocation: JSON.stringify(assetClassAllocation),
   };
 };
 
-/**
- * Update all asset prices in a portfolio.
- */
-const updatePortfolioPrices = async (portfolio) => {
-  if (!portfolio.assets || portfolio.assets.length === 0) return portfolio;
+// ─── Update live prices for all assets ────────────────────────────────────
+const updatePortfolioPrices = async (assets) => {
+  if (!assets || assets.length === 0) return assets;
 
-  const pricePromises = portfolio.assets.map(asset =>
-    fetchStockPrice(asset.symbol).catch(() => null)
-  );
+  const symbols = [...new Set(assets.map(a => a.symbol))];
+  const prices  = await marketSvc.fetchBatchQuotes(symbols);
 
-  const prices = await Promise.allSettled(pricePromises);
-
-  portfolio.assets.forEach((asset, idx) => {
-    const result = prices[idx];
-    if (result.status === 'fulfilled' && result.value) {
-      const p          = result.value;
-      asset.currentPrice  = p.currentPrice;
-      asset.currentValue  = asset.quantity * p.currentPrice;
-      asset.dayChange     = p.dayChange;
-      asset.dayChangePct  = p.dayChangePct;
+  for (const asset of assets) {
+    const q = prices[asset.symbol];
+    if (q) {
+      asset.currentPrice  = q.currentPrice;
+      asset.currentValue  = Math.round(q.currentPrice * asset.quantity * 100) / 100;
+      asset.dayChange     = q.dayChange;
+      asset.dayChangePct  = q.dayChangePct;
     }
-  });
-
-  return portfolio;
-};
-
-/**
- * Recalculate portfolio-level scores.
- */
-const recalculateScores = (portfolio) => {
-  const allocations = portfolio.assets.map(a => a.allocationPct || 0);
-
-  portfolio.diversificationScore = helpers.diversificationScore(allocations);
-
-  // Build sector allocation
-  const sectorMap = {};
-  portfolio.assets.forEach(a => {
-    const sector = a.sector || 'Others';
-    if (!sectorMap[sector]) sectorMap[sector] = { value: 0, percentage: 0 };
-    sectorMap[sector].value += a.currentValue || 0;
-  });
-
-  if (portfolio.totalCurrentValue > 0) {
-    portfolio.sectorAllocation = Object.entries(sectorMap).map(([sector, data]) => ({
-      sector,
-      value     : data.value,
-      percentage: (data.value / portfolio.totalCurrentValue) * 100,
-    })).sort((a, b) => b.percentage - a.percentage);
-
-    // Asset class allocation
-    const classMap = {};
-    portfolio.assets.forEach(a => {
-      const cls = a.type || 'other';
-      if (!classMap[cls]) classMap[cls] = { value: 0 };
-      classMap[cls].value += a.currentValue || 0;
-    });
-    portfolio.assetClassAllocation = Object.entries(classMap).map(([assetClass, d]) => ({
-      assetClass,
-      value     : d.value,
-      percentage: (d.value / portfolio.totalCurrentValue) * 100,
-    }));
   }
-
-  return portfolio;
+  return assets;
 };
 
-/**
- * Process uploaded CSV file and extract portfolio data.
- */
+// ─── Generate AI recommendation per asset ─────────────────────────────────
+const getAssetRecommendation = (asset) => {
+  const pnlPct = asset.percentageReturn || 0;
+  const risk   = asset.riskScore || 5;
+  const day    = asset.dayChangePct || 0;
+
+  // Simple rule-based recommendation
+  if (pnlPct > 30 && risk > 7) return { recommendation: 'sell',      confidenceScore: 72 };
+  if (pnlPct > 20 && day > 1)  return { recommendation: 'hold',      confidenceScore: 65 };
+  if (pnlPct < -15)             return { recommendation: 'sell',      confidenceScore: 68 };
+  if (pnlPct < -5 && day < -1) return { recommendation: 'hold',      confidenceScore: 55 };
+  if (pnlPct < 5 && risk <= 4) return { recommendation: 'buy',       confidenceScore: 70 };
+  if (day < -2 && risk <= 3)   return { recommendation: 'strong_buy',confidenceScore: 75 };
+
+  return { recommendation: 'hold', confidenceScore: 60 };
+};
+
+// ─── Process CSV upload ───────────────────────────────────────────────────
 const processCSVUpload = (filePath) => {
   return new Promise((resolve, reject) => {
     try {
-      const fileContent = fs.readFileSync(filePath, 'utf8');
-      Papa.parse(fileContent, {
+      const content = fs.readFileSync(filePath, 'utf8');
+      Papa.parse(content, {
         header        : true,
         skipEmptyLines: true,
-        transformHeader: (h) => h.trim().toLowerCase().replace(/\s+/g, '_'),
-        complete      : (results) => {
+        transformHeader: h => h.trim().toLowerCase().replace(/\s+/g, '_'),
+        complete: (results) => {
           const assets = results.data
-            .filter(row => row.symbol || row.stock_symbol)
-            .map(row => ({
-              symbol     : (row.symbol || row.stock_symbol || '').toUpperCase().trim(),
-              name       : row.name || row.company_name || row.symbol,
-              type       : (row.type || row.asset_type || 'stock').toLowerCase(),
-              quantity   : parseFloat(row.quantity || row.qty || 0),
-              avgBuyPrice: parseFloat(row.avg_buy_price || row.average_price || row.buy_price || 0),
-              sector     : row.sector || 'Unknown',
-              firstBuyDate: row.buy_date ? new Date(row.buy_date) : new Date(),
+            .filter(r => r.symbol || r.stock_symbol)
+            .map(r => ({
+              symbol      : (r.symbol || r.stock_symbol || '').toUpperCase().trim(),
+              name        : r.name || r.company_name || r.symbol || 'Unknown',
+              type        : (r.type || r.asset_type || 'stock').toLowerCase(),
+              quantity    : parseFloat(r.quantity || r.qty || 0),
+              avgBuyPrice : parseFloat(r.avg_buy_price || r.average_price || r.buy_price || 0),
+              sector      : r.sector || 'Unknown',
+              firstBuyDate: r.buy_date ? new Date(r.buy_date) : new Date(),
             }))
             .filter(a => a.symbol && a.quantity > 0 && a.avgBuyPrice > 0);
-
           resolve(assets);
-          fs.unlink(filePath, () => {}); // Cleanup
+          fs.unlink(filePath, () => {});
         },
         error: reject,
       });
-    } catch (e) {
-      reject(e);
-    }
+    } catch (e) { reject(e); }
   });
 };
 
-/**
- * Process uploaded Excel file.
- */
+// ─── Process Excel upload ─────────────────────────────────────────────────
 const processExcelUpload = (filePath) => {
   try {
-    const workbook  = XLSX.readFile(filePath);
-    const sheetName = workbook.SheetNames[0];
-    const sheet     = workbook.Sheets[sheetName];
-    const data      = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+    const wb    = XLSX.readFile(filePath);
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const data  = XLSX.utils.sheet_to_json(sheet, { defval: '' });
 
     const assets = data
-      .filter(row => row.Symbol || row.symbol)
-      .map(row => ({
-        symbol     : String(row.Symbol || row.symbol).toUpperCase().trim(),
-        name       : String(row.Name || row.Company || row.Symbol),
-        type       : String(row.Type || row.type || 'stock').toLowerCase(),
-        quantity   : parseFloat(row.Quantity || row.Qty || 0),
-        avgBuyPrice: parseFloat(row['Avg Price'] || row.AvgPrice || row.BuyPrice || 0),
-        sector     : String(row.Sector || 'Unknown'),
+      .filter(r => r.Symbol || r.symbol)
+      .map(r => ({
+        symbol      : String(r.Symbol || r.symbol).toUpperCase().trim(),
+        name        : String(r.Name || r.Company || r.Symbol),
+        type        : String(r.Type || r.type || 'stock').toLowerCase(),
+        quantity    : parseFloat(r.Quantity || r.Qty || 0),
+        avgBuyPrice : parseFloat(r['Avg Price'] || r.AvgPrice || r.BuyPrice || 0),
+        sector      : String(r.Sector || 'Unknown'),
       }))
       .filter(a => a.symbol && a.quantity > 0 && a.avgBuyPrice > 0);
 
     fs.unlink(filePath, () => {});
     return assets;
-  } catch (error) {
-    logger.error(`Excel processing error: ${error.message}`);
-    throw error;
+  } catch (e) {
+    logger.error(`Excel processing: ${e.message}`);
+    throw e;
   }
-};
-
-/**
- * Check for smart alerts: price targets, drops, etc.
- */
-const checkAndCreateAlerts = async (portfolio, userId) => {
-  const alerts = [];
-
-  portfolio.assets.forEach(asset => {
-    // Stop loss alert
-    if (asset.stopLoss && asset.currentPrice <= asset.stopLoss) {
-      alerts.push({
-        userId,
-        portfolioId: portfolio._id,
-        type    : 'stop_loss',
-        title   : `🚨 Stop Loss Triggered — ${asset.symbol}`,
-        message : `${asset.symbol} hit your stop loss of ₹${asset.stopLoss}. Current price: ₹${asset.currentPrice}. Consider reviewing your position.`,
-        severity: 'critical',
-        symbol  : asset.symbol,
-        targetPrice  : asset.stopLoss,
-        currentPrice : asset.currentPrice,
-        channels: ['in_app', 'push'],
-      });
-    }
-
-    // Target price alert
-    if (asset.targetPrice && asset.currentPrice >= asset.targetPrice) {
-      alerts.push({
-        userId,
-        portfolioId: portfolio._id,
-        type    : 'price_target',
-        title   : `🎯 Target Reached — ${asset.symbol}`,
-        message : `${asset.symbol} reached your target of ₹${asset.targetPrice}! Consider booking profits or revising the target.`,
-        severity: 'success',
-        symbol  : asset.symbol,
-        targetPrice  : asset.targetPrice,
-        currentPrice : asset.currentPrice,
-        channels: ['in_app', 'push'],
-      });
-    }
-  });
-
-  if (alerts.length > 0) {
-    await Alert.insertMany(alerts);
-    logger.info(`Created ${alerts.length} smart alerts for portfolio ${portfolio._id}`);
-  }
-
-  return alerts;
 };
 
 module.exports = {
-  fetchStockPrice,
+  recalculatePortfolioMetrics,
   updatePortfolioPrices,
-  recalculateScores,
+  getAssetRecommendation,
   processCSVUpload,
   processExcelUpload,
-  checkAndCreateAlerts,
 };

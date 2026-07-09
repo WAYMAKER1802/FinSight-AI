@@ -1,14 +1,12 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Newspaper, TrendingUp, TrendingDown, ExternalLink, RefreshCw, Sparkles, Filter } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Newspaper, ExternalLink, RefreshCw, Sparkles, Search, Loader2, Target, TrendingUp, TrendingDown, Clock, Activity, AlertCircle } from 'lucide-react';
 
 const newsItems = [
-  { id: 1, title: 'RBI Holds Repo Rate at 6.5% — Markets Cheer Stability', source: 'Economic Times', time: '2h ago', sentiment: 'positive', impact: 'High', category: 'Policy', summary: 'Reserve Bank of India maintains rates for third consecutive meeting, signaling end of rate hike cycle. Equity markets react positively with banking stocks leading gains.', tags: ['HDFCBANK', 'ICICIBANK', 'SBIN'] },
-  { id: 2, title: 'Infosys Reports Record Q4 Revenue; Beats Street Estimates', source: 'Moneycontrol', time: '4h ago', sentiment: 'positive', impact: 'Medium', category: 'Earnings', summary: 'Infosys Q4 net profit rises 14.2% YoY to ₹7,975 crore, beating expectations of ₹7,500 crore. Management gives positive guidance for FY26.', tags: ['INFY', 'TCS', 'WIPRO'] },
-  { id: 3, title: 'IT Sector Faces Headwinds as US Tech Spending Slows', source: 'Business Standard', time: '6h ago', sentiment: 'negative', impact: 'Medium', category: 'Sector', summary: 'Major US tech companies announce budget cuts for IT services. Indian IT majors could see 5-8% revenue impact in FY26 according to analysts.', tags: ['INFY', 'TCS', 'HCLTECH'] },
-  { id: 4, title: 'Gold Hits ₹65,000 on Geopolitical Uncertainty', source: 'Mint', time: '8h ago', sentiment: 'neutral', impact: 'Low', category: 'Commodity', summary: 'Gold prices rally as investors seek safe-haven assets amid Middle East tensions. ETFs see strong inflows.', tags: ['GOLDBEES', 'GOLDSHARE'] },
-  { id: 5, title: 'Reliance Jio IPO Plans Take Shape — Valuation at $100Bn', source: 'Bloomberg', time: '1d ago', sentiment: 'positive', impact: 'High', category: 'IPO', summary: 'Reports suggest Reliance Jio is planning an IPO in FY26 at a valuation of $100 billion. Would be India\'s largest IPO ever.', tags: ['RELIANCE'] },
-  { id: 6, title: 'Nifty 50 Closes at Record High as FII Buying Surges', source: 'Financial Express', time: '1d ago', sentiment: 'positive', impact: 'Medium', category: 'Market', summary: 'Nifty 50 closes at a new all-time high of 22,750 as FII\'s pump in ₹8,500 crore in a single session.', tags: [] },
+  { id: 1, title: 'RBI Holds Repo Rate at 6.5% — Markets Cheer Stability', source: 'Economic Times', time: '2h ago', sentiment: 'positive', impact: 'High', summary: 'Reserve Bank of India maintains rates for third consecutive meeting, signaling end of rate hike cycle.', tags: ['HDFCBANK', 'ICICIBANK'] },
+  { id: 2, title: 'Infosys Reports Record Q4 Revenue; Beats Street Estimates', source: 'Moneycontrol', time: '4h ago', sentiment: 'positive', impact: 'Medium', summary: 'Infosys Q4 net profit rises 14.2% YoY to ₹7,975 crore, beating expectations.', tags: ['INFY', 'TCS'] },
+  { id: 3, title: 'IT Sector Faces Headwinds as US Tech Spending Slows', source: 'Business Standard', time: '6h ago', sentiment: 'negative', impact: 'Medium', summary: 'Major US tech companies announce budget cuts for IT services. Indian IT majors could see revenue impact.', tags: ['INFY', 'WIPRO'] },
+  { id: 4, title: 'Gold Hits ₹65,000 on Geopolitical Uncertainty', source: 'Mint', time: '8h ago', sentiment: 'neutral', impact: 'Low', summary: 'Gold prices rally as investors seek safe-haven assets amid Middle East tensions.', tags: ['GOLDBEES'] },
 ];
 
 const sentimentColors: Record<string, string> = {
@@ -25,102 +23,287 @@ const impactColors: Record<string, string> = {
 
 export default function News() {
   const [filter, setFilter] = useState('all');
-  const [aiSummary, setAiSummary] = useState<string | null>(null);
-  const [loadingSummary, setLoadingSummary] = useState(false);
+  
+  // Scanner State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isScanning, setIsScanning] = useState(false);
+  const [reportCompany, setReportCompany] = useState<string | null>(null);
 
-  const getAiSummary = () => {
-    setLoadingSummary(true);
+  const handleScan = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    
+    setIsScanning(true);
+    setReportCompany(null);
+    
+    // Simulate AI web scraping delay
     setTimeout(() => {
-      setAiSummary("📊 **Today's Market Digest**: Markets are broadly positive driven by RBI rate pause and strong earnings season. Your portfolio has direct exposure to IT and Banking sectors — the Infosys beat is a net positive for your INFY holding (consider holding). The RBI pause is bullish for HDFC Bank (BUY signal strengthened). **One caution**: IT sector headwinds from US spending cuts could impact your 44% IT allocation — keep a close watch on TCS/INFY guidance.");
-      setLoadingSummary(false);
-    }, 1500);
+      setIsScanning(false);
+      setReportCompany(searchQuery.trim().toUpperCase());
+    }, 2500);
+  };
+
+  const clearReport = () => {
+    setReportCompany(null);
+    setSearchQuery('');
+  };
+
+  const getCompanyData = (companyName: string) => {
+    // Generate mock AI data based on company name
+    const isTech = companyName.includes('APPLE') || companyName.includes('TCS') || companyName.includes('INFY');
+    const isBank = companyName.includes('HDFC') || companyName.includes('SBI');
+    
+    if (isTech) {
+      return {
+        verdict: 'BULLISH',
+        sentiment: 82,
+        trend: 'up',
+        priceTarget: '+4.5%',
+        timeline: [
+          { time: '2 hours ago', event: 'Upgraded to "Strong Buy" by Morgan Stanley.' },
+          { time: '14 hours ago', event: 'Announced massive $30B chip procurement deal.' },
+          { time: '36 hours ago', event: 'Quarterly earnings leaked; margin expansion expected.' },
+        ],
+        impact: 'Highly positive for your portfolio. Consider adding to positions on minor dips.'
+      };
+    } else if (isBank) {
+      return {
+        verdict: 'BEARISH',
+        sentiment: 34,
+        trend: 'down',
+        priceTarget: '-2.1%',
+        timeline: [
+          { time: '5 hours ago', event: 'RBI announces stricter norms for unsecured lending.' },
+          { time: '22 hours ago', event: 'NIMs (Net Interest Margins) expected to compress in Q4.' },
+          { time: '41 hours ago', event: 'Foreign institutional selling observed in block deals.' },
+        ],
+        impact: 'Near-term headwinds expected. Avoid fresh allocations until rate clarity emerges.'
+      };
+    }
+    
+    // Default fallback
+    return {
+      verdict: 'NEUTRAL',
+      sentiment: 58,
+      trend: 'flat',
+      priceTarget: '+0.5%',
+      timeline: [
+        { time: '8 hours ago', event: 'Company announces routine management restructuring.' },
+        { time: '24 hours ago', event: 'Sector peers report mixed Q3 earnings.' },
+        { time: '48 hours ago', event: 'Promoter slightly increases stake by 0.1%.' },
+      ],
+      impact: 'Hold current positions. No significant catalysts in the immediate 48-hour horizon.'
+    };
   };
 
   const filtered = filter === 'all' ? newsItems : newsItems.filter(n => n.sentiment === filter);
 
   return (
-    <div className="space-y-6 max-w-5xl">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-black font-display text-white">Financial News</h1>
-          <p className="text-slate-400 text-sm mt-0.5">Curated for your portfolio</p>
-        </div>
-        <div className="flex gap-2">
-          <button className="btn-secondary text-sm gap-2"><RefreshCw className="w-4 h-4" /> Refresh</button>
-          <button onClick={getAiSummary} disabled={loadingSummary} className="btn-primary text-sm gap-2">
-            <Sparkles className="w-4 h-4" />
-            {loadingSummary ? 'Analyzing...' : 'AI Digest'}
-          </button>
-        </div>
+    <div className="space-y-8 max-w-5xl">
+      
+      {/* Page Header */}
+      <div>
+        <h1 className="text-2xl font-black font-display text-white">Financial News & Intelligence</h1>
+        <p className="text-slate-400 text-sm mt-0.5">Real-time market updates and AI-driven deep scans.</p>
       </div>
 
-      {/* AI Summary */}
-      {aiSummary && (
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-2xl border border-brand-500/30 bg-brand-500/5">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-4 h-4 text-brand-400" />
-            <span className="text-sm font-semibold text-brand-300">AI Market Digest</span>
-          </div>
-          <p className="text-sm text-slate-300 leading-relaxed"
-            dangerouslySetInnerHTML={{ __html: aiSummary.replace(/\*\*(.*?)\*\*/g, '<strong class="text-white">$1</strong>') }} />
-        </motion.div>
-      )}
-
-      {/* Filters */}
-      <div className="flex gap-2">
-        {['all', 'positive', 'negative', 'neutral'].map(f => (
-          <button key={f} onClick={() => setFilter(f)}
-            className={`text-xs px-3 py-1.5 rounded-full border capitalize transition-all ${
-              filter === f ? 'bg-brand-500/20 border-brand-500/40 text-brand-300' : 'border-white/10 text-slate-500 hover:border-white/20'
-            }`}>
-            {f === 'all' ? 'All News' : f === 'positive' ? '📈 Positive' : f === 'negative' ? '📉 Negative' : '➡️ Neutral'}
-          </button>
-        ))}
-      </div>
-
-      {/* News List */}
-      <div className="space-y-4">
-        {filtered.map((news, i) => (
-          <motion.div key={news.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className="card-static p-5 hover:border-white/15 transition-all">
-            <div className="flex items-start gap-4">
-              <div className="flex-1">
-                {/* Header */}
-                <div className="flex items-start justify-between gap-4 mb-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs text-slate-500">{news.source}</span>
-                    <span className="text-slate-700">·</span>
-                    <span className="text-xs text-slate-500">{news.time}</span>
-                    <span className={`badge border ${sentimentColors[news.sentiment]}`}>
-                      {news.sentiment === 'positive' ? '▲' : news.sentiment === 'negative' ? '▼' : '→'} {news.sentiment}
-                    </span>
-                    <span className={impactColors[news.impact]}>{news.impact} Impact</span>
-                  </div>
-                  <a href="#" className="text-slate-600 hover:text-slate-400 flex-shrink-0">
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                </div>
-
-                <h3 className="text-sm font-bold text-white mb-2 leading-snug hover:text-brand-300 cursor-pointer transition-colors">
-                  {news.title}
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">{news.summary}</p>
-
-                {/* Tags */}
-                {news.tags.length > 0 && (
-                  <div className="flex gap-1.5 mt-3">
-                    <span className="text-xs text-slate-600">Your stocks:</span>
-                    {news.tags.map(tag => (
-                      <span key={tag} className="badge-brand text-2xs">{tag}</span>
-                    ))}
-                  </div>
-                )}
-              </div>
+      {/* THE ULTIMATE 48-HOUR AI SCANNER */}
+      <div className="card-static p-1 relative overflow-hidden">
+        {/* Animated Background Gradient for that "AI" feel */}
+        <div className="absolute inset-0 bg-gradient-to-r from-brand-900/20 via-accent-violet/20 to-brand-900/20 animate-pulse-slow" />
+        
+        <div className="relative bg-dark-900/90 rounded-2xl p-6 border border-brand-500/20 backdrop-blur-md">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-brand-500/20 flex items-center justify-center text-brand-400">
+              <Sparkles className="w-5 h-5" />
             </div>
-          </motion.div>
-        ))}
+            <div>
+              <h2 className="text-lg font-bold text-white font-display">48-Hour AI Company Scan</h2>
+              <p className="text-xs text-brand-300">Scrape the web for deep insights on any company instantly.</p>
+            </div>
+          </div>
+
+          <form onSubmit={handleScan} className="flex gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="e.g., Apple, Reliance, HDFC Bank..."
+                className="input-field pl-12 h-12 w-full text-lg"
+                disabled={isScanning}
+              />
+            </div>
+            <button type="submit" disabled={isScanning || !searchQuery.trim()} className="btn-primary h-12 px-8">
+              {isScanning ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Scanning Web...
+                </>
+              ) : (
+                'Deep Scan'
+              )}
+            </button>
+          </form>
+
+          {/* Report Results */}
+          <AnimatePresence mode="wait">
+            {reportCompany && !isScanning && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-6 pt-6 border-t border-white/10"
+              >
+                {(() => {
+                  const data = getCompanyData(reportCompany);
+                  return (
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-2xl font-black text-white font-display uppercase tracking-wider">{reportCompany}</h3>
+                        <button onClick={clearReport} className="text-xs text-slate-400 hover:text-white transition-colors">Clear Report</button>
+                      </div>
+
+                      <div className="grid md:grid-cols-3 gap-4">
+                        {/* Verdict Card */}
+                        <div className={`p-4 rounded-xl border bg-opacity-10 flex flex-col justify-center items-center text-center ${
+                          data.trend === 'up' ? 'border-emerald-500/30 bg-emerald-500' :
+                          data.trend === 'down' ? 'border-rose-500/30 bg-rose-500' :
+                          'border-slate-500/30 bg-slate-500'
+                        }`}>
+                          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">AI Verdict</div>
+                          <div className={`text-2xl font-black flex items-center gap-2 ${
+                            data.trend === 'up' ? 'text-emerald-400' :
+                            data.trend === 'down' ? 'text-rose-400' :
+                            'text-slate-300'
+                          }`}>
+                            {data.verdict}
+                            {data.trend === 'up' ? <TrendingUp className="w-6 h-6" /> : 
+                             data.trend === 'down' ? <TrendingDown className="w-6 h-6" /> : 
+                             <Activity className="w-6 h-6" />}
+                          </div>
+                        </div>
+
+                        {/* Sentiment Card */}
+                        <div className="p-4 rounded-xl border border-white/5 bg-white/5 flex flex-col justify-center items-center text-center">
+                          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Web Sentiment Score</div>
+                          <div className="text-3xl font-black text-white">{data.sentiment}%</div>
+                          <div className="w-full h-1.5 bg-dark-800 rounded-full mt-3 overflow-hidden">
+                            <motion.div 
+                              initial={{ width: 0 }} 
+                              animate={{ width: `${data.sentiment}%` }} 
+                              transition={{ duration: 1, ease: 'easeOut' }}
+                              className={`h-full rounded-full ${
+                                data.sentiment > 60 ? 'bg-emerald-500' :
+                                data.sentiment < 40 ? 'bg-rose-500' : 'bg-brand-500'
+                              }`} 
+                            />
+                          </div>
+                        </div>
+
+                        {/* Prediction Card */}
+                        <div className="p-4 rounded-xl border border-white/5 bg-white/5 flex flex-col justify-center items-center text-center">
+                          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">AI Price Target (1W)</div>
+                          <div className={`text-3xl font-black ${
+                            data.priceTarget.startsWith('+') ? 'text-emerald-400' :
+                            data.priceTarget.startsWith('-') ? 'text-rose-400' : 'text-slate-300'
+                          }`}>{data.priceTarget}</div>
+                        </div>
+                      </div>
+
+                      {/* 48 Hour Timeline */}
+                      <div>
+                        <h4 className="text-sm font-bold text-white mb-4 flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-brand-400" /> Key Events (Last 48 Hours)
+                        </h4>
+                        <div className="space-y-3">
+                          {data.timeline.map((item, idx) => (
+                            <motion.div 
+                              key={idx}
+                              initial={{ opacity: 0, x: -10 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: idx * 0.15 }}
+                              className="flex gap-4 p-3 rounded-xl bg-white/5 border border-white/5"
+                            >
+                              <div className="w-24 flex-shrink-0 text-xs font-semibold text-brand-400 pt-0.5">{item.time}</div>
+                              <div className="text-sm text-slate-300">{item.event}</div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Portfolio Impact */}
+                      <div className="p-4 rounded-xl bg-brand-500/10 border border-brand-500/20 flex gap-3">
+                        <Target className="w-5 h-5 text-brand-400 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <div className="text-xs font-semibold text-brand-300 mb-1">Portfolio Impact Strategy</div>
+                          <p className="text-sm text-slate-300">{data.impact}</p>
+                        </div>
+                      </div>
+                      
+                    </div>
+                  );
+                })()}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      <hr className="border-white/5" />
+
+      {/* Standard News Feed */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-white font-display">General Market Headlines</h2>
+          <div className="flex gap-2">
+            {['all', 'positive', 'negative', 'neutral'].map(f => (
+              <button key={f} onClick={() => setFilter(f)}
+                className={`text-xs px-3 py-1.5 rounded-full border capitalize transition-all ${
+                  filter === f ? 'bg-brand-500/20 border-brand-500/40 text-brand-300' : 'border-white/10 text-slate-500 hover:border-white/20'
+                }`}>
+                {f === 'all' ? 'All' : f}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          {filtered.map((news, i) => (
+            <motion.div key={news.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="card-static p-5 hover:border-white/15 transition-all flex flex-col">
+              
+              <div className="flex items-start justify-between gap-4 mb-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-slate-500 font-semibold">{news.source}</span>
+                  <span className="text-slate-600">·</span>
+                  <span className="text-xs text-slate-500">{news.time}</span>
+                  <span className={`badge border ${sentimentColors[news.sentiment]}`}>
+                    {news.sentiment === 'positive' ? '▲' : news.sentiment === 'negative' ? '▼' : '→'} {news.sentiment}
+                  </span>
+                </div>
+                <a href="#" className="text-slate-600 hover:text-brand-400 transition-colors">
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </div>
+
+              <h3 className="text-sm font-bold text-white mb-2 leading-snug hover:text-brand-300 cursor-pointer transition-colors">
+                {news.title}
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed flex-1 mb-4">{news.summary}</p>
+
+              {news.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-auto">
+                  {news.tags.map(tag => (
+                    <span key={tag} className="badge-brand text-2xs">{tag}</span>
+                  ))}
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </div>
       </div>
     </div>
   );

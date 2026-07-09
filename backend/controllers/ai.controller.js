@@ -1,376 +1,171 @@
 /**
- * AI Controller
- * ─────────────
- * REST endpoints for all AI-powered features: portfolio analysis,
- * stock recommendations, sentiment, coaching, reports, and more.
+ * AI Controller — Dynamic Edition
+ * ─────────────────────────────────
+ * REST endpoints for AI features: portfolio doctor, daily brief,
+ * recommendations, chat, and more. Uses mock fallback when OpenAI key absent.
  */
-
 'use strict';
 
-const aiService   = require('../services/ai.service');
-const Portfolio   = require('../models/Portfolio.model');
-const Report      = require('../models/Report.model');
+const aiService  = require('../services/ai.service');
+const marketSvc  = require('../services/market.service');
+const { Portfolio, PortfolioAsset } = require('../models/Portfolio.model');
 const { AppError }= require('../middleware/errorHandler');
-const logger      = require('../config/logger');
+const { sendSuccess } = require('../utils/response');
+const logger     = require('../config/logger');
 
-/**
- * @swagger
- * /ai/analyze-portfolio/{portfolioId}:
- *   post:
- *     summary: Run full AI analysis on a portfolio
- *     tags: [AI]
- *     parameters:
- *       - in: path
- *         name: portfolioId
- *         required: true
- *         schema: { type: string }
- *     responses:
- *       200: { description: AI analysis result }
- */
+// ─── GET /ai/daily-brief ─────────────────────────────────────────────────────
+exports.getDailyBrief = async (req, res, next) => {
+  try {
+    const portfolios = await Portfolio.findAll({
+      where  : { userId: req.user.id },
+      include: [{ model: PortfolioAsset, as: 'assets' }],
+      order  : [['isDefault', 'DESC']],
+      limit  : 1,
+    });
+    const portfolio = portfolios[0];
+    if (!portfolio) {
+      return sendSuccess(res, 200, {
+        brief: `Hello ${req.user.name?.split(' ')[0] || 'Investor'},\n\n📊 Welcome to FinSight AI! Add your first portfolio to get a personalized daily briefing with AI-powered insights.\n\n🎯 Get started: Click "My Portfolio" → "Add Asset" to add your first holding.`
+      });
+    }
+
+    const marketOverview = await marketSvc.getMarketOverview();
+    const plain = portfolio.toJSON();
+    plain.sectorAllocation = JSON.parse(plain.sectorAllocation || '[]');
+
+    const { data } = await aiService.generateDailyBrief(
+      plain,
+      req.user.name?.split(' ')[0] || 'Investor',
+      marketOverview
+    );
+
+    sendSuccess(res, 200, { brief: data, marketOverview });
+  } catch (e) { next(e); }
+};
+
+// ─── POST /ai/analyze-portfolio/:portfolioId ─────────────────────────────────
 exports.analyzePortfolio = async (req, res, next) => {
   try {
-    const portfolio = await Portfolio.findOne({
-      _id   : req.params.portfolioId,
-      userId: req.user._id,
+    const p = await Portfolio.findOne({
+      where  : { id: req.params.portfolioId, userId: req.user.id },
+      include: [{ model: PortfolioAsset, as: 'assets' }],
     });
+    if (!p) return next(new AppError('Portfolio not found', 404));
 
-    if (!portfolio) return next(new AppError('Portfolio not found.', 404));
+    const plain = p.toJSON();
+    plain.sectorAllocation     = JSON.parse(plain.sectorAllocation    || '[]');
+    plain.assetClassAllocation = JSON.parse(plain.assetClassAllocation|| '[]');
 
-    const { data, usage, elapsed } = await aiService.analyzePortfolio(
-      portfolio.toObject(),
-      req.user.toSafeObject()
-    );
+    const { data } = await aiService.analyzePortfolio(plain, { riskProfile: req.user.riskProfile });
 
-    // Update portfolio with AI results
-    if (data.healthScore !== undefined) {
-      portfolio.healthScore     = data.healthScore;
-      portfolio.lastAIAnalysis  = {
-        summary     : data.summary || '',
-        insights    : data.insights || [],
-        warnings    : data.warnings || [],
-        opportunities: data.opportunities || [],
-        analyzedAt  : new Date(),
-      };
-      portfolio.overallSentiment = data.overallSentiment || 'neutral';
-      await portfolio.save({ validateBeforeSave: false });
+    // Save AI analysis back to portfolio
+    if (data) {
+      await p.update({ lastAIAnalysis: JSON.stringify(data) });
     }
 
-    logger.info(`Portfolio analysis for ${portfolio.name} | ${elapsed}ms | ${usage?.total_tokens} tokens`);
-
-    res.status(200).json({
-      success    : true,
-      message    : 'AI portfolio analysis complete',
-      data       : { analysis: data },
-      meta       : { tokensUsed: usage?.total_tokens, processingMs: elapsed },
-      timestamp  : new Date().toISOString(),
-    });
-  } catch (error) {
-    next(error);
-  }
+    logger.info(`Portfolio Doctor ran for ${p.name}`);
+    sendSuccess(res, 200, { analysis: data });
+  } catch (e) { next(e); }
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * @swagger
- * /ai/stock-recommendation:
- *   post:
- *     summary: Get AI Buy/Hold/Sell recommendation for a stock
- *     tags: [AI]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               symbol: { type: string, example: "RELIANCE" }
- *               currentPrice: { type: number, example: 2780 }
- */
-exports.getStockRecommendation = async (req, res, next) => {
+// ─── GET /ai/recommendations/:portfolioId ────────────────────────────────────
+exports.getRecommendations = async (req, res, next) => {
   try {
-    const { stockData, marketData } = req.body;
-
-    if (!stockData?.symbol) {
-      return next(new AppError('Stock symbol is required.', 400));
-    }
-
-    const { data, usage, elapsed } = await aiService.getStockRecommendation(
-      stockData,
-      marketData || {},
-      req.user.toSafeObject()
-    );
-
-    res.status(200).json({
-      success  : true,
-      message  : 'Stock recommendation generated',
-      data     : { recommendation: data },
-      meta     : { tokensUsed: usage?.total_tokens, processingMs: elapsed },
-      timestamp: new Date().toISOString(),
+    const assets = await PortfolioAsset.findAll({
+      where: { portfolioId: req.params.portfolioId, userId: req.user.id }
     });
-  } catch (error) {
-    next(error);
-  }
+    if (!assets.length) return sendSuccess(res, 200, { recommendations: [] });
+
+    const recs = await Promise.all(
+      assets.map(async a => {
+        const { data } = await aiService.getStockRecommendation(a.toJSON(), {}, {});
+        return { symbol: a.symbol, name: a.name, ...data };
+      })
+    );
+    sendSuccess(res, 200, { recommendations: recs });
+  } catch (e) { next(e); }
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * @swagger
- * /ai/sentiment:
- *   post:
- *     summary: Analyze market sentiment from news and market data
- *     tags: [AI]
- */
-exports.analyzeSentiment = async (req, res, next) => {
-  try {
-    const { newsItems, marketData } = req.body;
-
-    const { data, usage, elapsed } = await aiService.analyzeSentiment(
-      newsItems || [],
-      marketData || {}
-    );
-
-    res.status(200).json({
-      success  : true,
-      message  : 'Market sentiment analysis complete',
-      data     : { sentiment: data },
-      meta     : { tokensUsed: usage?.total_tokens, processingMs: elapsed },
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * @swagger
- * /ai/chat:
- *   post:
- *     summary: Chat with AI Financial Coach
- *     tags: [AI]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [message]
- *             properties:
- *               message: { type: string, example: "Should I invest in gold right now?" }
- *               conversationHistory: { type: array }
- */
+// ─── POST /ai/chat ────────────────────────────────────────────────────────────
 exports.chat = async (req, res, next) => {
   try {
     const { message, conversationHistory = [] } = req.body;
+    if (!message) return next(new AppError('Message is required', 400));
 
-    if (!message?.trim()) {
-      return next(new AppError('Message cannot be empty.', 400));
-    }
+    const portfolios = await Portfolio.findAll({
+      where: { userId: req.user.id },
+      include: [{ model: PortfolioAsset, as: 'assets' }],
+      limit: 1,
+    });
+    const portfolio = portfolios[0]?.toJSON() || {};
+    portfolio.sectorAllocation = JSON.parse(portfolio.sectorAllocation || '[]');
 
-    const userContext = {
-      riskProfile   : req.user.riskProfile,
-      portfolioValue: null, // Could be fetched from DB
-      experience    : 'intermediate',
-      age           : null,
+    const context = {
+      portfolioValue : portfolio.totalCurrentValue || 0,
+      returns        : portfolio.returnsPercent || 0,
+      healthScore    : portfolio.healthScore || 0,
+      assetCount     : portfolio.assets?.length || 0,
+      userName       : req.user.name,
     };
 
-    const { data, usage, elapsed } = await aiService.coachUser(
-      message,
-      userContext,
-      conversationHistory
-    );
+    const { data } = await aiService.coachUser(message, context, conversationHistory);
 
-    res.status(200).json({
-      success  : true,
-      data     : {
-        reply    : data,
-        sessionId: req.body.sessionId || null,
-      },
-      meta     : { tokensUsed: usage?.total_tokens, processingMs: elapsed },
-      timestamp: new Date().toISOString(),
+    sendSuccess(res, 200, {
+      reply  : data || `As your AI financial coach, I'm analyzing your question about "${message}". Your portfolio has ${context.assetCount} assets with ${context.returns.toFixed(1)}% overall returns. What specific area would you like to explore?`,
+      context: { portfolioLoaded: !!portfolio.id },
     });
-  } catch (error) {
-    next(error);
-  }
+  } catch (e) { next(e); }
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * @swagger
- * /ai/risk-analysis/{portfolioId}:
- *   post:
- *     summary: Perform deep risk analysis on a portfolio
- *     tags: [AI]
- */
-exports.analyzeRisk = async (req, res, next) => {
+// ─── POST /ai/sentiment ──────────────────────────────────────────────────────
+exports.getSentiment = async (req, res, next) => {
   try {
-    const portfolio = await Portfolio.findOne({
-      _id   : req.params.portfolioId,
-      userId: req.user._id,
-    });
-
-    if (!portfolio) return next(new AppError('Portfolio not found.', 404));
-
-    const { data, usage, elapsed } = await aiService.analyzeRisk(
-      portfolio.toObject(),
-      req.body.marketData || {},
-      req.user.toSafeObject()
-    );
-
-    // Update risk score
-    if (data.overallRiskScore !== undefined) {
-      portfolio.riskScore = data.overallRiskScore;
-      await portfolio.save({ validateBeforeSave: false });
-    }
-
-    res.status(200).json({
-      success  : true,
-      message  : 'Risk analysis complete',
-      data     : { riskAnalysis: data },
-      meta     : { tokensUsed: usage?.total_tokens, processingMs: elapsed },
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    next(error);
-  }
+    const marketData = await marketSvc.getMarketOverview();
+    const { data } = await aiService.analyzeSentiment([], marketData);
+    sendSuccess(res, 200, { sentiment: data, marketData });
+  } catch (e) { next(e); }
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── POST /ai/plan-goal ──────────────────────────────────────────────────────
+exports.planGoal = async (req, res, next) => {
+  try {
+    const { data } = await aiService.planGoal(req.body, { monthlyIncome: req.user.annualIncome / 12 || 50000 });
+    sendSuccess(res, 200, { plan: data });
+  } catch (e) { next(e); }
+};
 
-/**
- * @swagger
- * /ai/optimize/{portfolioId}:
- *   post:
- *     summary: Get AI portfolio optimization recommendations
- *     tags: [AI]
- */
+// ─── Stubs for other endpoints ────────────────────────────────────────────────
+exports.getStockRecommendation = async (req, res, next) => {
+  try {
+    const quote = await marketSvc.fetchQuote(req.params.symbol);
+    const { data } = await aiService.getStockRecommendation({ symbol: req.params.symbol, ...quote }, quote, {});
+    sendSuccess(res, 200, { recommendation: data });
+  } catch (e) { next(e); }
+};
+
 exports.optimizePortfolio = async (req, res, next) => {
   try {
-    const portfolio = await Portfolio.findOne({
-      _id   : req.params.portfolioId,
-      userId: req.user._id,
-    });
-
-    if (!portfolio) return next(new AppError('Portfolio not found.', 404));
-
-    const constraints = {
-      riskTolerance   : req.user.riskProfile,
-      horizon         : req.user.investmentHorizon || 'long_term',
-      taxConsideration: req.body.taxConsideration !== false,
-      maxSingleStock  : req.body.maxSingleStock || 20,
-      minEquity       : req.body.minEquity || 30,
-    };
-
-    const { data, usage, elapsed } = await aiService.optimizePortfolio(
-      portfolio.toObject(),
-      constraints
-    );
-
-    res.status(200).json({
-      success  : true,
-      message  : 'Portfolio optimization complete',
-      data     : { optimization: data },
-      meta     : { tokensUsed: usage?.total_tokens, processingMs: elapsed },
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    next(error);
-  }
+    sendSuccess(res, 200, { message: 'Portfolio optimization coming soon with real market data.' });
+  } catch (e) { next(e); }
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * @swagger
- * /ai/personality-test:
- *   post:
- *     summary: Analyze investor personality from questionnaire
- *     tags: [AI]
- */
-exports.analyzePersonality = async (req, res, next) => {
+// ─── POST /ai/simulate-crash/:portfolioId ────────────────────────────────────
+exports.simulateCrash = async (req, res, next) => {
   try {
-    const { answers } = req.body;
-
-    if (!answers || Object.keys(answers).length === 0) {
-      return next(new AppError('Questionnaire answers are required.', 400));
-    }
-
-    const { data, usage, elapsed } = await aiService.analyzePersonality(answers);
-
-    // Update user risk profile based on AI analysis
-    if (data.riskProfile) {
-      req.user.riskProfile = data.riskProfile.toLowerCase().replace(' ', '_');
-      await req.user.save({ validateBeforeSave: false });
-    }
-
-    res.status(200).json({
-      success  : true,
-      message  : 'Investment personality analysis complete',
-      data     : { personality: data },
-      meta     : { tokensUsed: usage?.total_tokens, processingMs: elapsed },
-      timestamp: new Date().toISOString(),
+    const p = await Portfolio.findOne({
+      where  : { id: req.params.portfolioId, userId: req.user.id },
+      include: [{ model: PortfolioAsset, as: 'assets' }],
     });
-  } catch (error) {
-    next(error);
-  }
-};
+    if (!p) return next(new AppError('Portfolio not found', 404));
 
-// ─────────────────────────────────────────────────────────────────────────────
+    const plain = p.toJSON();
+    plain.sectorAllocation = JSON.parse(plain.sectorAllocation || '[]');
 
-/**
- * @swagger
- * /ai/weekly-report/{portfolioId}:
- *   post:
- *     summary: Generate AI weekly portfolio report
- *     tags: [AI]
- */
-exports.generateWeeklyReport = async (req, res, next) => {
-  try {
-    const portfolio = await Portfolio.findOne({
-      _id   : req.params.portfolioId,
-      userId: req.user._id,
-    });
+    const { scenario } = req.body;
+    if (!scenario || !scenario.name) return next(new AppError('Scenario details required', 400));
 
-    if (!portfolio) return next(new AppError('Portfolio not found.', 404));
-
-    const weeklyData = req.body.weeklyData || {
-      weekPnl    : portfolio.dayPnl * 5,
-      weekPnlPct : portfolio.dayPnlPercent * 5,
-      bestPerformer : portfolio.assets[0],
-      worstPerformer: portfolio.assets[portfolio.assets.length - 1],
-    };
-
-    const { data, usage, elapsed } = await aiService.generateWeeklyReport(
-      portfolio.toObject(),
-      weeklyData,
-      req.body.marketData || {}
-    );
-
-    // Save report to DB
-    const report = await Report.create({
-      userId     : req.user._id,
-      portfolioId: portfolio._id,
-      title      : `Weekly Report — ${portfolio.name} — ${new Date().toLocaleDateString('en-IN')}`,
-      type       : 'weekly_summary',
-      status     : 'ready',
-      summary    : typeof data === 'string' ? data.substring(0, 500) : JSON.stringify(data).substring(0, 500),
-      aiModel    : process.env.OPENAI_MODEL,
-      tokensUsed : usage?.total_tokens,
-      generationMs: elapsed,
-    });
-
-    res.status(200).json({
-      success  : true,
-      message  : 'Weekly report generated',
-      data     : { report: data, reportId: report._id },
-      meta     : { tokensUsed: usage?.total_tokens, processingMs: elapsed },
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    next(error);
-  }
+    const { data } = await aiService.simulateCrash(plain, scenario);
+    
+    sendSuccess(res, 200, { simulation: data });
+  } catch (e) { next(e); }
 };

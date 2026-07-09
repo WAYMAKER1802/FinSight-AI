@@ -19,6 +19,9 @@ const { signAccessToken, signRefreshToken, sendTokenResponse } = require('../mid
 const logger = require('../config/logger');
 const jwt    = require('jsonwebtoken');
 const emailService = require('../services/email.service');
+const { OAuth2Client } = require('google-auth-library');
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || 'dummy-client-id');
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -111,12 +114,125 @@ exports.login = async (req, res, next) => {
       return next(new AppError('Your account has been deactivated. Please contact support.', 401));
     }
 
+    if (user.mfaEnabled && user.mPin) {
+      const tempToken = jwt.sign({ id: user.id, mfa: true }, process.env.JWT_SECRET || 'secret', { expiresIn: '15m' });
+      return res.status(200).json({
+        success: true,
+        requiresMPin: true,
+        tempToken,
+      });
+    }
+
     // Update login audit
     user.lastLogin  = new Date();
     user.loginCount = (user.loginCount || 0) + 1;
     await user.save();
 
     logger.info(`User logged in: ${user.email}`);
+
+    sendTokenResponse(user, 200, res);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * @swagger
+ * /auth/verify-mpin:
+ *   post:
+ *     summary: Verify 4-digit mPIN
+ *     tags: [Auth]
+ *     security: []
+ */
+exports.verifyMPin = async (req, res, next) => {
+  try {
+    const { tempToken, pin } = req.body;
+    if (!tempToken || !pin) return next(new AppError('Token and PIN are required.', 400));
+
+    const decoded = jwt.verify(tempToken, process.env.JWT_SECRET || 'secret');
+    if (!decoded.mfa) return next(new AppError('Invalid token for MFA.', 401));
+
+    const user = await User.findByPk(decoded.id);
+    if (!user || !user.isActive) return next(new AppError('Invalid token.', 401));
+
+    const isMatch = await user.compareMPin(pin.toString());
+    if (!isMatch) return next(new AppError('Incorrect PIN.', 401));
+
+    user.lastLogin = new Date();
+    user.loginCount = (user.loginCount || 0) + 1;
+    await user.save();
+
+    logger.info(`User logged in with mPIN: ${user.email}`);
+    sendTokenResponse(user, 200, res);
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return next(new AppError('Session expired. Please log in again.', 401));
+    }
+    next(error);
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * @swagger
+ * /auth/google:
+ *   post:
+ *     summary: Login or register with Google OAuth
+ *     tags: [Auth]
+ *     security: []
+ */
+exports.googleSignIn = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+    if (!token) return next(new AppError('Google token is required.', 400));
+
+    let payload;
+    try {
+      const ticket = await googleClient.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID || 'dummy-client-id',
+      });
+      payload = ticket.getPayload();
+    } catch (err) {
+      if (process.env.NODE_ENV === 'development') {
+        payload = jwt.decode(token);
+      } else {
+        return next(new AppError('Invalid Google token.', 401));
+      }
+    }
+
+    if (!payload || !payload.email) return next(new AppError('Invalid Google token payload.', 401));
+
+    const { email, name, sub: googleId, picture: avatar } = payload;
+
+    let user = await User.findOne({ where: { email: email.toLowerCase() } });
+
+    if (user) {
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.emailVerified = true;
+        if (avatar && !user.avatar) user.avatar = avatar;
+        await user.save();
+      }
+      if (!user.isActive) return next(new AppError('Your account has been deactivated.', 401));
+      
+      user.lastLogin = new Date();
+      user.loginCount = (user.loginCount || 0) + 1;
+      await user.save();
+    } else {
+      user = await User.create({
+        name,
+        email: email.toLowerCase(),
+        googleId,
+        avatar,
+        emailVerified: true,
+        riskProfile: 'moderate',
+      });
+      logger.info(`New user registered via Google: ${user.email}`);
+    }
 
     sendTokenResponse(user, 200, res);
   } catch (error) {

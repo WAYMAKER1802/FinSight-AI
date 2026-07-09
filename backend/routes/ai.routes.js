@@ -1,28 +1,21 @@
-/**
- * AI Routes
- * ──────────
- */
-
 'use strict';
-
 const express = require('express');
 const router  = express.Router();
+const ctrl    = require('../controllers/ai.controller');
+const { protect } = require('../middleware/auth.middleware');
+const { aiLimiter } = require('../middleware/rateLimiter');
 
-const aiController    = require('../controllers/ai.controller');
-const { protect, requirePremium } = require('../middleware/auth.middleware');
-const { aiLimiter }   = require('../middleware/rateLimiter');
-
-// Apply auth + AI rate limiter to all AI routes
 router.use(protect);
 router.use(aiLimiter);
 
-router.post('/analyze-portfolio/:portfolioId', aiController.analyzePortfolio);
-router.post('/stock-recommendation',           aiController.getStockRecommendation);
-router.post('/sentiment',                      aiController.analyzeSentiment);
-router.post('/chat',                           aiController.chat);
-router.post('/risk-analysis/:portfolioId',     aiController.analyzeRisk);
-router.post('/optimize/:portfolioId',          requirePremium, aiController.optimizePortfolio);
-router.post('/personality-test',               aiController.analyzePersonality);
-router.post('/weekly-report/:portfolioId',     aiController.generateWeeklyReport);
+router.get ('/daily-brief',                          ctrl.getDailyBrief);
+router.post('/analyze-portfolio/:portfolioId',       ctrl.analyzePortfolio);
+router.get ('/recommendations/:portfolioId',         ctrl.getRecommendations);
+router.get ('/stock/:symbol',                        ctrl.getStockRecommendation);
+router.post('/chat',                                 ctrl.chat);
+router.get ('/sentiment',                            ctrl.getSentiment);
+router.post('/plan-goal',                            ctrl.planGoal);
+router.post('/optimize/:portfolioId',                ctrl.optimizePortfolio);
+router.post('/simulate-crash/:portfolioId',          ctrl.simulateCrash);
 
 module.exports = router;

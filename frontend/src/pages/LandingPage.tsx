@@ -6,6 +6,7 @@ import {
   ChevronRight, Sparkles, Bot, LineChart, PieChart, Bell, FileText,
   CheckCircle2, Play, Globe, Users, Award, DollarSign
 } from 'lucide-react';
+import AnimatedBackground from '@/components/AnimatedBackground';
 
 // ── Feature Data ────────────────────────────────────────────────────────────
 const features = [
@@ -141,7 +142,8 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-dark-950 overflow-x-hidden">
+    <div className="min-h-screen bg-transparent overflow-x-hidden relative">
+      <AnimatedBackground />
 
       {/* ── Navbar ────────────────────────────────────────────────────────── */}
       <motion.nav

@@ -9,16 +9,13 @@ export const authApi = {
     const { data } = await api.post('/auth/register', userData);
     return data;
   },
-  logout: async () => {
-    const { data } = await api.post('/auth/logout');
-    return data;
-  },
-  getMe: async () => {
-    const { data } = await api.get('/auth/me');
-    return data;
-  },
-  forgotPassword: async (email: string) => {
-    const { data } = await api.post('/auth/forgot-password', { email });
-    return data;
+  logout: () => api.post('/auth/logout'),
+  getMe: () => api.get('/auth/me'),
+  forgotPassword: (data: { email: string }) => api.post('/auth/forgot-password', data),
+  resetPassword: (token: string, data: any) => api.patch(`/auth/reset-password/${token}`, data),
+  googleLogin: (token: string) => api.post('/auth/google', { token }),
+  verifyMPin: async (data: { tempToken: string; pin: string }) => {
+    const response = await api.post('/auth/verify-mpin', data);
+    return response.data;
   },
 };

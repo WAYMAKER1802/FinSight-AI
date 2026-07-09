@@ -17,6 +17,11 @@ class User extends Model {
     return bcrypt.compare(candidatePassword, this.password);
   }
 
+  async compareMPin(candidatePin) {
+    if (!this.mPin) return false;
+    return bcrypt.compare(candidatePin, this.mPin);
+  }
+
   createPasswordResetToken() {
     const resetToken = crypto.randomBytes(32).toString('hex');
     this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
@@ -58,7 +63,12 @@ User.init({
   },
   password: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true // Allow null for OAuth users
+  },
+  googleId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true
   },
   avatar: DataTypes.STRING,
   phone: DataTypes.STRING,
@@ -108,6 +118,7 @@ User.init({
   emailVerificationToken: DataTypes.STRING,
   emailVerified: { type: DataTypes.BOOLEAN, defaultValue: false },
   mfaEnabled: { type: DataTypes.BOOLEAN, defaultValue: false },
+  mPin: DataTypes.STRING,
   mfaSecret: DataTypes.STRING,
   
   // Audit
@@ -120,7 +131,7 @@ User.init({
   modelName: 'User',
   hooks: {
     beforeSave: async (user) => {
-      if (user.changed('password')) {
+      if (user.changed('password') && user.password) {
         const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS, 10) || 12;
         user.password = await bcrypt.hash(user.password, saltRounds);
       }

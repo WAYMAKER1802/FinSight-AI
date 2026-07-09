@@ -18,6 +18,11 @@ router.post('/change-password', userController.changePassword);
 router.post('/upload-avatar', uploadAvatar, userController.uploadAvatar);
 router.delete('/account', userController.deleteAccount);
 
+// mPIN Routes
+router.post('/mpin/setup', userController.setupMPin);
+router.put('/mpin/reset', userController.resetMPin);
+router.put('/mpin/disable', userController.disableMPin);
+
 // ── Admin Routes ─────────────────────────────────────────────────────────────
 router.get('/', authorize('admin'), userController.getAllUsers);
 router.patch('/:id/role', authorize('admin'), userController.updateUserRole);

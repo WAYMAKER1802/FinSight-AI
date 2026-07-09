@@ -29,10 +29,14 @@ const connectDB = async () => {
 
     await sequelize.authenticate();
     logger.info('✅ MySQL connected successfully via Sequelize');
-    
+
+    // Import all models so they register with sequelize before sync
+    require('../models/User.model');
+    require('../models/Portfolio.model');   // registers Portfolio, PortfolioAsset, PortfolioSnapshot
+
     // Sync all models
     await sequelize.sync({ alter: true });
-    logger.info('✅ MySQL models synchronized');
+    logger.info('✅ MySQL models synchronized (Users, Portfolios, PortfolioAssets, PortfolioSnapshots)');
     
     return sequelize;
   } catch (error) {

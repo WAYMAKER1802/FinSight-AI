@@ -14,6 +14,8 @@ const { authLimiter, strictLimiter } = require('../middleware/rateLimiter');
 
 router.post('/register',         authLimiter,   authController.register);
 router.post('/login',            authLimiter,   authController.login);
+router.post('/verify-mpin',      authLimiter,   authController.verifyMPin);
+router.post('/google',                          authController.googleSignIn);
 router.post('/logout',           protect,       authController.logout);
 router.post('/refresh',                         authController.refreshToken);
 router.get ('/me',               protect,       authController.getMe);
