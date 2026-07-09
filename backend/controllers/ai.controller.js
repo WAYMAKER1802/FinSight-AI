@@ -25,7 +25,7 @@ exports.getDailyBrief = async (req, res, next) => {
     const portfolio = portfolios[0];
     if (!portfolio) {
       return sendSuccess(res, 200, {
-        brief: `Hello ${req.user.name?.split(' ')[0] || 'Investor'},\n\n📊 Welcome to FinSight AI! Add your first portfolio to get a personalized daily briefing with AI-powered insights.\n\n🎯 Get started: Click "My Portfolio" → "Add Asset" to add your first holding.`
+        brief: `Hello ${req.user.name?.split(' ')[0] || 'Investor'},\n\n📊 Welcome to InvestIQ AI! Add your first portfolio to get a personalized daily briefing with AI-powered insights.\n\n🎯 Get started: Click "My Portfolio" → "Add Asset" to add your first holding.`
       });
     }
 

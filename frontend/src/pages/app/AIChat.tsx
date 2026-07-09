@@ -34,7 +34,7 @@ export default function AIChat() {
     {
       id      : '0',
       role    : 'assistant',
-      content : "**Namaste! I'm your FinSight AI financial coach.** 🤖💼\n\nI can help you with:\n\n• **Portfolio analysis** — health score, risk, diversification\n• **Stock recommendations** — buy/hold/sell with reasoning\n• **Goal planning** — SIP calculations, retirement planning\n• **Market insights** — news impact, sector analysis\n\nWhat would you like to explore today?",
+      content : "**Namaste! I'm your InvestIQ AI financial coach.** 🤖💼\n\nI can help you with:\n\n• **Portfolio analysis** — health score, risk, diversification\n• **Stock recommendations** — buy/hold/sell with reasoning\n• **Goal planning** — SIP calculations, retirement planning\n• **Market insights** — news impact, sector analysis\n\nWhat would you like to explore today?",
       timestamp: new Date(),
     },
   ]);
@@ -251,7 +251,7 @@ export default function AIChat() {
       </div>
 
       <p className="text-center text-2xs text-slate-600 mt-2">
-        FinSight AI can make mistakes. This is not financial advice. Always consult a certified advisor.
+        InvestIQ AI can make mistakes. This is not financial advice. Always consult a certified advisor.
       </p>
     </div>
   );

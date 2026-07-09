@@ -31,7 +31,7 @@ const logger = createLogger({
     timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     json()
   ),
-  defaultMeta: { service: 'finsight-api' },
+  defaultMeta: { service: 'investiq-api' },
   transports : [
     // Error-only log
     new transports.File({

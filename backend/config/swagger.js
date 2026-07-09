@@ -14,13 +14,13 @@ const path            = require('path');
 const swaggerDefinition = {
   openapi : '3.0.0',
   info    : {
-    title       : 'FinSight AI — REST API',
+    title       : 'InvestIQ AI — REST API',
     version     : '1.0.0',
     description : `
-## 🚀 FinSight AI — AI-Driven Financial Portfolio Advisor
+## 🚀 InvestIQ AI — AI-Driven Financial Portfolio Advisor
 
 ### Overview
-FinSight AI provides a comprehensive REST API for managing financial portfolios,
+InvestIQ AI provides a comprehensive REST API for managing financial portfolios,
 generating AI-powered investment recommendations, analyzing market sentiment,
 and delivering personalized financial guidance.
 
@@ -47,16 +47,16 @@ All responses follow a consistent envelope:
 \`\`\`
     `,
     contact     : {
-      name  : 'FinSight AI Engineering Team',
-      email : 'api@finsight.ai',
-      url   : 'https://finsight.ai',
+      name  : 'InvestIQ AI Engineering Team',
+      email : 'api@investiq.ai',
+      url   : 'https://investiq.ai',
     },
     license     : {
       name : 'MIT',
       url  : 'https://opensource.org/licenses/MIT',
     },
     'x-logo': {
-      url: 'https://finsight.ai/logo.png',
+      url: 'https://investiq.ai/logo.png',
     },
   },
   servers: [
@@ -65,7 +65,7 @@ All responses follow a consistent envelope:
       description: 'Development Server',
     },
     {
-      url        : 'https://api.finsight.ai/api/v1',
+      url        : 'https://api.investiq.ai/api/v1',
       description: 'Production Server',
     },
   ],
@@ -119,7 +119,7 @@ All responses follow a consistent envelope:
           name        : { type: 'string', example: 'Arjun Sharma' },
           email       : { type: 'string', format: 'email', example: 'arjun@example.com' },
           role        : { type: 'string', enum: ['user', 'premium', 'admin'] },
-          avatar      : { type: 'string', example: 'https://api.finsight.ai/uploads/avatars/user.jpg' },
+          avatar      : { type: 'string', example: 'https://api.investiq.ai/uploads/avatars/user.jpg' },
           riskProfile : { type: 'string', enum: ['conservative', 'moderate', 'aggressive'] },
           createdAt   : { type: 'string', format: 'date-time' },
         },
@@ -205,7 +205,7 @@ const swaggerUiOptions = {
     .swagger-ui .topbar-wrapper .link { color: white; font-weight: bold; }
     .swagger-ui .info .title { color: #667eea; }
   `,
-  customSiteTitle : 'FinSight AI — API Docs',
+  customSiteTitle : 'InvestIQ AI — API Docs',
   customfavIcon   : '/favicon.ico',
   swaggerOptions  : {
     persistAuthorization: true,

@@ -4,16 +4,16 @@ services:
   # ── MongoDB ─────────────────────────────────────────────────────────────
   mongo:
     image: mongo:7.0
-    container_name: finsight-mongo
+    container_name: investiq-mongo
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-changeme}
-      MONGO_INITDB_DATABASE: finsight_ai
+      MONGO_INITDB_DATABASE: investiq_ai
     volumes:
       - mongo_data:/data/db
     networks:
-      - finsight-network
+      - investiq-network
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 30s
@@ -23,13 +23,13 @@ services:
   # ── Redis ────────────────────────────────────────────────────────────────
   redis:
     image: redis:7.2-alpine
-    container_name: finsight-redis
+    container_name: investiq-redis
     restart: unless-stopped
     command: redis-server --requirepass ${REDIS_PASSWORD:-changeme}
     volumes:
       - redis_data:/data
     networks:
-      - finsight-network
+      - investiq-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 30s
@@ -41,12 +41,12 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: finsight-backend
+    container_name: investiq-backend
     restart: unless-stopped
     env_file: .env
     environment:
       NODE_ENV: production
-      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-changeme}@mongo:27017/finsight_ai?authSource=admin
+      MONGODB_URI: mongodb://admin:${MONGO_PASSWORD:-changeme}@mongo:27017/investiq_ai?authSource=admin
       REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379
     ports:
       - "5000:5000"
@@ -54,7 +54,7 @@ services:
       - ./backend/uploads:/app/uploads
       - ./backend/logs:/app/logs
     networks:
-      - finsight-network
+      - investiq-network
     depends_on:
       mongo:
         condition: service_healthy
@@ -71,13 +71,13 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: finsight-frontend
+    container_name: investiq-frontend
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
     networks:
-      - finsight-network
+      - investiq-network
     depends_on:
       - backend
 
@@ -88,5 +88,5 @@ volumes:
     driver: local
 
 networks:
-  finsight-network:
+  investiq-network:
     driver: bridge

@@ -9,7 +9,7 @@
 const { Sequelize } = require('sequelize');
 const logger = require('./logger');
 
-const sequelize = new Sequelize('finsight_ai', 'root', 'Varnika#02', {
+const sequelize = new Sequelize('investiq_ai', 'root', 'Varnika#02', {
   host: '127.0.0.1',
   port: 3306,
   dialect: 'mysql',
@@ -24,7 +24,7 @@ const connectDB = async () => {
     // Create DB if not exists
     const mysql = require('mysql2/promise');
     const connection = await mysql.createConnection({ host: '127.0.0.1', port: 3306, user: 'root', password: 'Varnika#02' });
-    await connection.query('CREATE DATABASE IF NOT EXISTS finsight_ai;');
+    await connection.query('CREATE DATABASE IF NOT EXISTS investiq_ai;');
     await connection.end();
 
     await sequelize.authenticate();

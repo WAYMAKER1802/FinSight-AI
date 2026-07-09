@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'finsight-backend',
+      name: 'investiq-backend',
       script: 'server.js',
       instances: 'max', // Cluster mode: scale across all available CPUs
       exec_mode: 'cluster',

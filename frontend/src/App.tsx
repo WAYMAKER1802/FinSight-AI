@@ -32,6 +32,7 @@ import RiskSimulator    from '@/pages/app/RiskSimulator';
 import Calculators      from '@/pages/app/Calculators';
 import Reports          from '@/pages/app/Reports';
 import Alerts           from '@/pages/app/Alerts';
+import Invest           from '@/pages/app/Invest';
 import LiveMarket       from '@/pages/app/LiveMarket';
 import WealthScore      from '@/pages/app/WealthScore';
 import PersonalityTest  from '@/pages/app/PersonalityTest';
@@ -119,6 +120,7 @@ function AppRoutes() {
           <Route path="calculators"        element={<AnimatedPage><Calculators /></AnimatedPage>} />
           <Route path="reports"            element={<AnimatedPage><Reports /></AnimatedPage>} />
           <Route path="alerts"             element={<AnimatedPage><Alerts /></AnimatedPage>} />
+          <Route path="invest"             element={<AnimatedPage><Invest /></AnimatedPage>} />
           <Route path="live-market"        element={<AnimatedPage><LiveMarket /></AnimatedPage>} />
           <Route path="wealth-score"       element={<AnimatedPage><WealthScore /></AnimatedPage>} />
           <Route path="personality-test"   element={<AnimatedPage><PersonalityTest /></AnimatedPage>} />

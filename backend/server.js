@@ -1,9 +1,9 @@
 /**
- * FinSight AI — Main Server Entry Point
+ * InvestIQ AI — Main Server Entry Point
  * =====================================
  * @description  Express server bootstrapper with security middleware,
  *               database connection, route registration, and error handling.
- * @author       FinSight AI Engineering Team
+ * @author       InvestIQ AI Engineering Team
  * @version      1.0.0
  */
 
@@ -117,7 +117,7 @@ app.use(`${API}/market`,      marketRoutes);
 app.get('/', (req, res) => {
   res.json({
     success : true,
-    message : '🚀 FinSight AI API is live',
+    message : '🚀 InvestIQ AI API is live',
     version : process.env.API_VERSION || 'v1',
     docs    : `/api-docs`,
     timestamp: new Date().toISOString(),
@@ -134,7 +134,7 @@ const startServer = async () => {
     await connectDB();
     await connectRedis();
     const server = app.listen(PORT, () => {
-      logger.info(`✅ FinSight AI server running on port ${PORT} [${process.env.NODE_ENV}]`);
+      logger.info(`✅ InvestIQ AI server running on port ${PORT} [${process.env.NODE_ENV}]`);
       logger.info(`📖 Swagger docs available at http://localhost:${PORT}/api-docs`);
     });
 

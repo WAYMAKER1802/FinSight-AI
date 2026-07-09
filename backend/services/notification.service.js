@@ -37,7 +37,7 @@ const dispatchNotification = async (user, content) => {
       try {
         await sendEmail({
           email: user.email,
-          subject: `FinSight AI: ${content.title}`,
+          subject: `InvestIQ AI: ${content.title}`,
           message: content.message,
           html: `<p>${content.message}</p><br/><a href="${content.link || '#'}">View Details</a>`,
         });

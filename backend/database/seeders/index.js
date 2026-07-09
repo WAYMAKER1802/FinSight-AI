@@ -15,7 +15,7 @@ const Goal      = require('../../models/Goal.model');
 const Alert     = require('../../models/Alert.model');
 const logger    = require('../../config/logger');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/finsight_ai';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/investiq_ai';
 
 const seedUsers = [
   {
@@ -32,7 +32,7 @@ const seedUsers = [
   },
   {
     name       : 'Admin User',
-    email      : 'admin@finsight.ai',
+    email      : 'admin@investiq.ai',
     password   : 'Admin@1234',
     role       : 'admin',
     riskProfile: 'aggressive',
@@ -160,7 +160,7 @@ const runSeed = async () => {
     logger.info('   Role:     premium');
     logger.info('');
     logger.info('🔑 Admin credentials:');
-    logger.info('   Email:    admin@finsight.ai');
+    logger.info('   Email:    admin@investiq.ai');
     logger.info('   Password: Admin@1234');
 
     await mongoose.disconnect();

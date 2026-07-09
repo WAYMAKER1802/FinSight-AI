@@ -203,7 +203,7 @@ export default function Recommendation() {
       <div className="flex items-start gap-2 p-4 rounded-xl bg-brand-500/10 border border-brand-500/20 text-brand-300/80 text-xs">
         <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
         <p>
-          <strong>FinSight AI Disclaimer:</strong> These allocations are AI-generated recommendations based on Modern Portfolio Theory and your active risk profile. They do not constitute formal financial advice. Market conditions change; consult a registered financial advisor before executing significant rebalancing.
+          <strong>InvestIQ AI Disclaimer:</strong> These allocations are AI-generated recommendations based on Modern Portfolio Theory and your active risk profile. They do not constitute formal financial advice. Market conditions change; consult a registered financial advisor before executing significant rebalancing.
         </p>
       </div>
     </div>

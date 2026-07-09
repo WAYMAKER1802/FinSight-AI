@@ -2,14 +2,14 @@
 
 ## 1. Introduction
 ### 1.1 Purpose
-This document specifies the software requirements for **FinSight AI**, an AI-Driven Financial Portfolio Advisor. It provides a comprehensive overview of the system, its features, and constraints.
+This document specifies the software requirements for **InvestIQ AI**, an AI-Driven Financial Portfolio Advisor. It provides a comprehensive overview of the system, its features, and constraints.
 
 ### 1.2 Scope
-FinSight AI is a comprehensive Wealth Management platform merging FinTech and Artificial Intelligence. The system allows users to manage their financial portfolios, receive AI-powered stock recommendations, and assess portfolio risk.
+InvestIQ AI is a comprehensive Wealth Management platform merging FinTech and Artificial Intelligence. The system allows users to manage their financial portfolios, receive AI-powered stock recommendations, and assess portfolio risk.
 
 ## 2. Overall Description
 ### 2.1 Product Perspective
-FinSight AI operates as a client-server web application. The frontend is built with React and TypeScript, and the backend utilizes Node.js, Express, and MongoDB.
+InvestIQ AI operates as a client-server web application. The frontend is built with React and TypeScript, and the backend utilizes Node.js, Express, and MongoDB.
 
 ### 2.2 User Classes and Characteristics
 *   **Standard Users**: Individuals tracking their investments, seeking AI advice.

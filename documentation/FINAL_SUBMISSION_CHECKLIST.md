@@ -19,4 +19,4 @@
 **Final Completion Percentage: 100%**  
 **Final Engineering Score: 100/100**
 
-The FinSight AI project is definitively ready for final submission and demonstration.
+The InvestIQ AI project is definitively ready for final submission and demonstration.

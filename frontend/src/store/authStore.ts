@@ -107,7 +107,7 @@ export const useAuthStore = create<AuthState>()(
       updateUser: (updates) => set((state) => ({ user: state.user ? { ...state.user, ...updates } : null })),
     }),
     {
-      name      : 'finsight-auth',
+      name      : 'investiq-auth',
       partialize : (state) => ({ accessToken: state.accessToken, user: state.user }),
     }
   )

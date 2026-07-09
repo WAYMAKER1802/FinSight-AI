@@ -1,6 +1,6 @@
 # Installation Guide
 
-This guide provides step-by-step instructions to set up the FinSight AI development environment on your local machine.
+This guide provides step-by-step instructions to set up the InvestIQ AI development environment on your local machine.
 
 ## Prerequisites
 Ensure you have the following installed:
@@ -27,7 +27,7 @@ Create a `.env` file in the `backend/` directory:
 ```env
 PORT=5000
 NODE_ENV=development
-MONGO_URI=mongodb://localhost:27017/finsight
+MONGO_URI=mongodb://localhost:27017/investiq
 REDIS_URL=redis://localhost:6379
 JWT_SECRET=your_super_secret_jwt_key
 OPENAI_API_KEY=your_openai_api_key

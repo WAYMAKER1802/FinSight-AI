@@ -5,7 +5,7 @@ import {
   LayoutDashboard, PieChart, MessageSquare, BarChart3, Newspaper,
   Target, ShieldAlert, Calculator, FileText, Bell, Activity, Trophy,
   Brain, Sunset, Settings, User, TrendingUp, Menu, X,
-  ChevronRight, LogOut, Sparkles
+  ChevronRight, LogOut, Sparkles, ShoppingBag
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -39,6 +39,7 @@ const navItems = [
     items: [
       { to: '/app/news',        icon: Newspaper,  label: 'News'          },
       { to: '/app/live-market', icon: Activity,   label: 'Live Market', badge: 'Live' },
+      { to: '/app/invest',      icon: ShoppingBag,label: 'Invest'        },
       { to: '/app/alerts',      icon: Bell,       label: 'Alerts', badge: '3' },
     ]
   },
@@ -72,7 +73,7 @@ export default function AppLayout() {
         </div>
         {!collapsed && (
           <div>
-            <div className="text-sm font-black font-display gradient-text">FinSight AI</div>
+            <div className="text-sm font-black font-display gradient-text">InvestIQ AI</div>
             <div className="text-2xs text-slate-500">Portfolio Advisor</div>
           </div>
         )}

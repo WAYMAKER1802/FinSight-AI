@@ -66,7 +66,7 @@ GOLDBEES,Nippon India ETF Gold BeES,etf,50,45,Commodities,2023-04-01
 AXIS_BLUECHIP,Axis Bluechip Fund,mutual_fund,1000,35.5,Mutual Fund,2021-01-01`;
 
   res.setHeader('Content-Type', 'text/csv');
-  res.setHeader('Content-Disposition', 'attachment; filename="finsight-portfolio-template.csv"');
+  res.setHeader('Content-Disposition', 'attachment; filename="investiq-portfolio-template.csv"');
   res.send(csv);
 });
 

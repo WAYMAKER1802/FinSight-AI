@@ -49,7 +49,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await registerUser(data);
-      toast.success('Welcome to FinSight AI! 🎉');
+      toast.success('Welcome to InvestIQ AI! 🎉');
       navigate('/app/dashboard');
     } catch (err: any) {
       toast.error(err.response?.data?.message || 'Registration failed. Please try again.');

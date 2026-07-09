@@ -1,9 +1,9 @@
 # Testing Guide
 
-This document explains the testing strategy, frameworks used, and how to execute tests in the FinSight AI repository.
+This document explains the testing strategy, frameworks used, and how to execute tests in the InvestIQ AI repository.
 
 ## 1. Testing Strategy
-FinSight AI employs a multi-tiered testing strategy to ensure code quality and system reliability:
+InvestIQ AI employs a multi-tiered testing strategy to ensure code quality and system reliability:
 *   **Unit Tests**: Test individual functions and helpers in isolation (e.g., calculation utilities, validators).
 *   **Integration Tests**: Test API endpoints and database interactions, utilizing mock services for external APIs (like OpenAI).
 

@@ -1,7 +1,7 @@
 {
-  "name": "finsight-ai-backend",
+  "name": "investiq-ai-backend",
   "version": "1.0.0",
-  "description": "FinSight AI — AI-Driven Financial Portfolio Advisor Backend API",
+  "description": "InvestIQ AI — AI-Driven Financial Portfolio Advisor Backend API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -24,7 +24,7 @@
     "express",
     "mongodb"
   ],
-  "author": "FinSight AI Team",
+  "author": "InvestIQ AI Team",
   "license": "MIT",
   "dependencies": {
     "axios": "^1.6.2",

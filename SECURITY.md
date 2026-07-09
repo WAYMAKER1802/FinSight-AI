@@ -11,9 +11,9 @@ Use this section to tell people about which versions of your project are current
 
 ## Reporting a Vulnerability
 
-We take the security of FinSight AI very seriously. If you discover a security vulnerability, please do NOT report it by opening a public issue.
+We take the security of InvestIQ AI very seriously. If you discover a security vulnerability, please do NOT report it by opening a public issue.
 
-Instead, please send an email to **security@finsight.ai**.
+Instead, please send an email to **security@investiq.ai**.
 
 ### What to include in your report:
 *   Type of issue (e.g., buffer overflow, SQL injection, cross-site scripting).

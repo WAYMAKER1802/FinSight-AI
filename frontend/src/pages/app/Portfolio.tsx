@@ -291,7 +291,7 @@ export default function Portfolio() {
     // Header
     doc.setFontSize(22);
     doc.setTextColor(30, 64, 175); // Brand color
-    doc.text('FinSight AI - Portfolio Intelligence Report', 14, 20);
+    doc.text('InvestIQ AI - Portfolio Intelligence Report', 14, 20);
     
     doc.setFontSize(12);
     doc.setTextColor(100, 116, 139); // Slate-500
@@ -331,7 +331,7 @@ export default function Portfolio() {
       styles: { fontSize: 8 },
     });
 
-    doc.save(`${p.name}_FinSight_Report.pdf`);
+    doc.save(`${p.name}_InvestIQ_Report.pdf`);
     toast.success('AI Report Downloaded!');
   };
 

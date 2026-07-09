@@ -9,25 +9,25 @@ RUN npm ci --only=production
 # Final image
 FROM node:20-alpine
 
-LABEL maintainer="FinSight AI Team <dev@finsight.ai>"
+LABEL maintainer="InvestIQ AI Team <dev@investiq.ai>"
 LABEL version="1.0.0"
-LABEL description="FinSight AI — Backend API Server"
+LABEL description="InvestIQ AI — Backend API Server"
 
 # Non-root user for security
-RUN addgroup -g 1001 nodejs && adduser -S finsight -u 1001
+RUN addgroup -g 1001 nodejs && adduser -S investiq -u 1001
 
 WORKDIR /app
 
 # Copy dependencies and app source
-COPY --from=builder --chown=finsight:nodejs /app/node_modules ./node_modules
-COPY --chown=finsight:nodejs . .
+COPY --from=builder --chown=investiq:nodejs /app/node_modules ./node_modules
+COPY --chown=investiq:nodejs . .
 
 # Create necessary directories
 RUN mkdir -p logs uploads/reports uploads/avatars && \
-    chown -R finsight:nodejs logs uploads
+    chown -R investiq:nodejs logs uploads
 
 # Switch to non-root user
-USER finsight
+USER investiq
 
 EXPOSE 5000
 

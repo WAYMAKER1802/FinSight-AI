@@ -27,7 +27,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <TrendingUp className="w-5 h-5 text-white" />
             </div>
             <div>
-              <div className="text-lg font-black font-display gradient-text">FinSight AI</div>
+              <div className="text-lg font-black font-display gradient-text">InvestIQ AI</div>
               <div className="text-xs text-slate-500">AI-Driven Portfolio Advisor</div>
             </div>
           </div>
@@ -61,7 +61,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
         {/* Footer */}
         <div className="relative text-xs text-slate-600">
-          © 2025 FinSight AI · Built with ❤️ for smart investors
+          © 2025 InvestIQ AI · Built with ❤️ for smart investors
         </div>
       </div>
 
@@ -73,7 +73,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-500 to-accent-violet flex items-center justify-center">
               <TrendingUp className="w-4 h-4 text-white" />
             </div>
-            <span className="font-black font-display gradient-text">FinSight AI</span>
+            <span className="font-black font-display gradient-text">InvestIQ AI</span>
           </div>
 
           {children || <Outlet />}

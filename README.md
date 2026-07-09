@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🚀 FinSight AI
+# 🚀 InvestIQ AI
 ### AI-Driven Financial Portfolio Advisor
 
 <br/>
@@ -22,7 +22,7 @@
 
 <br/>
 
-> **FinSight AI** is a full-stack, production-ready AI-powered financial portfolio advisor that brings the intelligence of a professional wealth manager to every investor. Built with React 18, Node.js, MongoDB, and GPT-4.
+> **InvestIQ AI** is a full-stack, production-ready AI-powered financial portfolio advisor that brings the intelligence of a professional wealth manager to every investor. Built with React 18, Node.js, MongoDB, and GPT-4.
 
 <br/>
 
@@ -87,7 +87,7 @@ graph TB
 ## 📁 Project Structure
 
 ```
-finsight-ai/
+investiq-ai/
 ├── 📂 frontend/                    # React 18 + TypeScript + Vite
 │   ├── src/
 │   │   ├── pages/
@@ -156,8 +156,8 @@ finsight-ai/
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-org/finsight-ai.git
-cd finsight-ai
+git clone https://github.com/your-org/investiq-ai.git
+cd investiq-ai
 
 # 2. Configure environment
 cp backend/.env.example backend/.env
@@ -167,7 +167,7 @@ cp backend/.env.example backend/.env
 docker compose up -d
 
 # 4. Seed sample data
-docker exec finsight-backend node database/seeders/index.js
+docker exec investiq-backend node database/seeders/index.js
 
 # App running at: http://localhost
 # API running at: http://localhost:5000/api/v1
@@ -213,7 +213,7 @@ PORT=5000
 API_VERSION=v1
 
 # Database
-MONGODB_URI=mongodb://localhost:27017/finsight_ai
+MONGODB_URI=mongodb://localhost:27017/investiq_ai
 REDIS_URL=redis://localhost:6379
 
 # JWT Authentication
@@ -238,7 +238,7 @@ FRONTEND_URL=http://localhost:5173
 
 ```env
 VITE_API_URL=http://localhost:5000/api/v1
-VITE_APP_NAME=FinSight AI
+VITE_APP_NAME=InvestIQ AI
 ```
 
 ---
@@ -251,7 +251,7 @@ VITE_APP_NAME=FinSight AI
    Password: Demo@1234
 
 👑 Admin User
-   Email:    admin@finsight.ai
+   Email:    admin@investiq.ai
    Password: Admin@1234
 ```
 
@@ -259,7 +259,7 @@ VITE_APP_NAME=FinSight AI
 
 ## 🤖 AI Features
 
-FinSight AI uses **GPT-4** with 11 specialized financial prompt templates:
+InvestIQ AI uses **GPT-4** with 11 specialized financial prompt templates:
 
 | Prompt | Description |
 |--------|-------------|
@@ -426,7 +426,7 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 Built with ❤️ by the VarAvi
 
-**FinSight AI** — *Where AI meets Financial Intelligence*
+**InvestIQ AI** — *Where AI meets Financial Intelligence*
 
 [⭐ Star this repo](.) · [🐛 Report Issues](issues) · [💬 Discussions](discussions)
 

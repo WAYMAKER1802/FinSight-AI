@@ -1,6 +1,6 @@
-# FinSight AI — API Documentation
+# InvestIQ AI — API Documentation
 
-> **Base URL:** `https://api.finsight.ai/api/v1`  
+> **Base URL:** `https://api.investiq.ai/api/v1`  
 > **Format:** JSON  
 > **Authentication:** Bearer Token (JWT)
 

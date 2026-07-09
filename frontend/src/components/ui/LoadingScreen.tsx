@@ -5,7 +5,7 @@ interface LoadingScreenProps {
   message?: string;
 }
 
-export default function LoadingScreen({ message = 'Loading FinSight AI...' }: LoadingScreenProps) {
+export default function LoadingScreen({ message = 'Loading InvestIQ AI...' }: LoadingScreenProps) {
   return (
     <div className="fixed inset-0 bg-dark-950 flex flex-col items-center justify-center z-50">
       {/* Background glow */}
@@ -38,7 +38,7 @@ export default function LoadingScreen({ message = 'Loading FinSight AI...' }: Lo
 
         {/* Brand */}
         <div className="text-center">
-          <h2 className="text-2xl font-black font-display gradient-text">FinSight AI</h2>
+          <h2 className="text-2xl font-black font-display gradient-text">InvestIQ AI</h2>
           <p className="text-xs text-slate-500 mt-1">{message}</p>
         </div>
 

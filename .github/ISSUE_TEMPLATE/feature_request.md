@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest an idea for FinSight AI
+about: Suggest an idea for InvestIQ AI
 title: '[FEAT] '
 labels: enhancement
 assignees: ''

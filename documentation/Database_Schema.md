@@ -1,6 +1,6 @@
 # Database Schema
 
-FinSight AI uses MongoDB, a NoSQL document database. Mongoose is used as the Object Data Modeling (ODM) library.
+InvestIQ AI uses MongoDB, a NoSQL document database. Mongoose is used as the Object Data Modeling (ODM) library.
 
 ## 1. User Collection
 Stores authentication, authorization, and profile preferences.

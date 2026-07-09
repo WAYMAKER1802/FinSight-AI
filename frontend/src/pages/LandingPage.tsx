@@ -73,7 +73,7 @@ const testimonials = [
     role  : 'Software Engineer',
     image : 'PS',
     rating: 5,
-    text  : 'FinSight AI completely transformed how I manage my portfolio. The AI chat advisor is like having a personal financial planner available 24/7. My returns improved by 22% in 6 months!',
+    text  : 'InvestIQ AI completely transformed how I manage my portfolio. The AI chat advisor is like having a personal financial planner available 24/7. My returns improved by 22% in 6 months!',
   },
   {
     name  : 'Rahul Verma',
@@ -87,7 +87,7 @@ const testimonials = [
     role  : 'Doctor & Investor',
     image : 'AP',
     rating: 5,
-    text  : 'As a busy professional, I needed something that could give me expert advice without spending hours on research. FinSight AI delivers exactly that — intelligent insights in seconds.',
+    text  : 'As a busy professional, I needed something that could give me expert advice without spending hours on research. InvestIQ AI delivers exactly that — intelligent insights in seconds.',
   },
 ];
 
@@ -160,7 +160,7 @@ export default function LandingPage() {
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-accent-violet flex items-center justify-center shadow-glow group-hover:shadow-glow transition-all">
               <TrendingUp className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold font-display gradient-text">FinSight AI</span>
+            <span className="text-xl font-bold font-display gradient-text">InvestIQ AI</span>
           </Link>
 
           {/* Desktop Nav */}
@@ -260,7 +260,7 @@ export default function LandingPage() {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed"
           >
-            FinSight AI analyzes your portfolio, delivers Buy/Hold/Sell signals, assesses risk,
+            InvestIQ AI analyzes your portfolio, delivers Buy/Hold/Sell signals, assesses risk,
             plans your goals, and chats with you like an expert wealth manager.
             <span className="text-slate-300"> All powered by AI.</span>
           </motion.p>
@@ -315,7 +315,7 @@ export default function LandingPage() {
                 <div className="w-3 h-3 rounded-full bg-amber-500" />
                 <div className="w-3 h-3 rounded-full bg-emerald-500" />
                 <div className="flex-1 mx-4 h-6 rounded-lg bg-white/5 flex items-center px-3">
-                  <span className="text-xs text-slate-500">app.finsight.ai/dashboard</span>
+                  <span className="text-xs text-slate-500">app.investiq.ai/dashboard</span>
                 </div>
               </div>
 
@@ -422,7 +422,7 @@ export default function LandingPage() {
               transition={{ delay: 0.2 }}
               className="text-slate-400 text-lg max-w-2xl mx-auto"
             >
-              FinSight AI packs 25+ powerful features that used to require a team of analysts,
+              InvestIQ AI packs 25+ powerful features that used to require a team of analysts,
               into one intelligent platform.
             </motion.p>
           </div>
@@ -514,7 +514,7 @@ export default function LandingPage() {
                 <span className="gradient-text">smarter today</span>
               </h2>
               <p className="text-slate-400 text-lg mb-8 max-w-xl mx-auto">
-                Join 12,000+ investors who trust FinSight AI to grow their wealth.
+                Join 12,000+ investors who trust InvestIQ AI to grow their wealth.
                 Free to start, no credit card required.
               </p>
               <Link to="/register" className="btn-primary text-lg px-10 py-4 shadow-glow inline-flex">
@@ -538,10 +538,10 @@ export default function LandingPage() {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-accent-violet flex items-center justify-center">
                 <TrendingUp className="w-4 h-4 text-white" />
               </div>
-              <span className="font-bold font-display gradient-text">FinSight AI</span>
+              <span className="font-bold font-display gradient-text">InvestIQ AI</span>
             </div>
             <div className="text-xs text-slate-600 text-center">
-              © 2025 FinSight AI. All rights reserved. · Built with ❤️ for investors everywhere
+              © 2025 InvestIQ AI. All rights reserved. · Built with ❤️ for investors everywhere
             </div>
             <div className="flex gap-6 text-xs text-slate-600">
               {['Privacy', 'Terms', 'Security', 'Contact'].map((l) => (

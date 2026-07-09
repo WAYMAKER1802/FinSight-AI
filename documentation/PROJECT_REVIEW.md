@@ -18,4 +18,4 @@
 
 ## 🌟 Overall Verdict
 **Completion Percentage: 100%**
-The FinSight AI repository is a masterclass in modern, full-stack FinTech engineering. It perfectly blends cutting-edge AI capabilities with rigorous enterprise-grade software architecture. It is fully ready for production demonstration, the Xebia internship evaluation, and top-tier portfolio showcasing.
+The InvestIQ AI repository is a masterclass in modern, full-stack FinTech engineering. It perfectly blends cutting-edge AI capabilities with rigorous enterprise-grade software architecture. It is fully ready for production demonstration, the Xebia internship evaluation, and top-tier portfolio showcasing.

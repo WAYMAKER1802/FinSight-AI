@@ -1,4 +1,4 @@
-# Security Architecture — FinSight AI
+# Security Architecture — InvestIQ AI
 
 ---
 

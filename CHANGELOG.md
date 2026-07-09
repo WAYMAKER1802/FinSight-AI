@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to FinSight AI are documented here.
+All notable changes to InvestIQ AI are documented here.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/) and [Semantic Versioning](https://semver.org/).
 

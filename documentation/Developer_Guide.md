@@ -1,6 +1,6 @@
 # Developer Guide
 
-Welcome to the FinSight AI engineering team! This guide explains our development standards and workflow.
+Welcome to the InvestIQ AI engineering team! This guide explains our development standards and workflow.
 
 ## 1. Code Formatting & Linting
 *   We use ESLint to enforce code quality.

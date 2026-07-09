@@ -1,6 +1,6 @@
 # Administrator Manual
 
-This document outlines the capabilities and responsibilities of FinSight AI System Administrators.
+This document outlines the capabilities and responsibilities of InvestIQ AI System Administrators.
 
 ## 1. Accessing the Admin Panel
 To access admin features, your user account must have the `role` attribute set to `admin` in the database.

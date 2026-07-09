@@ -1,8 +1,8 @@
 {
-  "name": "finsight-ai-frontend",
+  "name": "investiq-ai-frontend",
   "private": true,
   "version": "1.0.0",
-  "description": "FinSight AI — AI-Driven Financial Portfolio Advisor Frontend",
+  "description": "InvestIQ AI — AI-Driven Financial Portfolio Advisor Frontend",
   "type": "module",
   "scripts": {
     "dev": "vite",

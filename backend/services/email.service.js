@@ -18,7 +18,7 @@ const sendEmail = async (options) => {
     });
 
     const message = {
-      from: `${process.env.FROM_NAME || 'FinSight AI'} <${process.env.FROM_EMAIL || 'noreply@finsight.ai'}>`,
+      from: `${process.env.FROM_NAME || 'InvestIQ AI'} <${process.env.FROM_EMAIL || 'noreply@investiq.ai'}>`,
       to: options.email,
       subject: options.subject,
       text: options.message,
@@ -39,7 +39,7 @@ const sendPasswordReset = async (email, token) => {
   const message = `You requested a password reset. Please go to this link to reset your password: \n\n ${resetUrl}`;
   const html = `
     <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #10b981;">FinSight AI</h2>
+      <h2 style="color: #10b981;">InvestIQ AI</h2>
       <h3>Password Reset Request</h3>
       <p>You are receiving this email because you (or someone else) has requested a password reset for your account.</p>
       <p>Please click the button below to reset your password:</p>
@@ -52,7 +52,7 @@ const sendPasswordReset = async (email, token) => {
 
   return sendEmail({
     email,
-    subject: 'FinSight AI - Password Reset Token',
+    subject: 'InvestIQ AI - Password Reset Token',
     message,
     html,
   });

@@ -145,7 +145,7 @@ export default function LoginPage() {
     >
       <div className="mb-8">
         <h1 className="text-3xl font-black font-display text-white mb-2">Welcome back</h1>
-        <p className="text-slate-400 text-sm">Sign in to your FinSight AI account</p>
+        <p className="text-slate-400 text-sm">Sign in to your InvestIQ AI account</p>
       </div>
 
       {/* Demo credentials hint */}

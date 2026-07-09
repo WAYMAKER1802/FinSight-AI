@@ -116,7 +116,7 @@ const requirePremium = (req, res, next) => {
     return next();
   }
   return next(new AppError(
-    'This feature requires a Premium subscription. Upgrade at finsight.ai/upgrade', 403
+    'This feature requires a Premium subscription. Upgrade at investiq.ai/upgrade', 403
   ));
 };
 

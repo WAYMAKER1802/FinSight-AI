@@ -1,7 +1,7 @@
 # System Architecture Document
 
 ## 1. Overview
-FinSight AI utilizes a modern, decoupled **Client-Server Architecture**. The application is broken down into a responsive single-page application (SPA) frontend and a RESTful API backend, supported by a document-oriented database and an in-memory cache.
+InvestIQ AI utilizes a modern, decoupled **Client-Server Architecture**. The application is broken down into a responsive single-page application (SPA) frontend and a RESTful API backend, supported by a document-oriented database and an in-memory cache.
 
 ## 2. High-Level Architecture Diagram
 ```mermaid

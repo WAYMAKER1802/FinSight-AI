@@ -1,6 +1,6 @@
 # User Manual
 
-Welcome to FinSight AI! This manual will guide you through the features of your AI-Driven Financial Portfolio Advisor.
+Welcome to InvestIQ AI! This manual will guide you through the features of your AI-Driven Financial Portfolio Advisor.
 
 ## 1. Getting Started
 ### 1.1 Registration

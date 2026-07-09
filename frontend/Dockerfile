@@ -14,7 +14,7 @@ RUN npm run build
 # Serve stage — lightweight nginx
 FROM nginx:1.25-alpine
 
-LABEL maintainer="FinSight AI Team"
+LABEL maintainer="InvestIQ AI Team"
 
 # Copy built assets
 COPY --from=builder /app/dist /usr/share/nginx/html

@@ -1,9 +1,9 @@
 # Deployment Guide
 
-This document outlines the procedures for deploying FinSight AI to a production environment.
+This document outlines the procedures for deploying InvestIQ AI to a production environment.
 
 ## 1. Containerized Deployment (Docker)
-The recommended deployment strategy for FinSight AI is via Docker and Docker Compose. This ensures environment consistency across development, staging, and production.
+The recommended deployment strategy for InvestIQ AI is via Docker and Docker Compose. This ensures environment consistency across development, staging, and production.
 
 ### 1.1 Prerequisites
 *   Docker Engine
@@ -14,11 +14,11 @@ Ensure the `.env.production` file is securely placed on the host machine.
 ```env
 NODE_ENV=production
 PORT=5000
-MONGO_URI=mongodb://mongo:27017/finsight_prod
+MONGO_URI=mongodb://mongo:27017/investiq_prod
 REDIS_URL=redis://redis:6379
 JWT_SECRET=<strong_production_secret>
 OPENAI_API_KEY=<production_openai_key>
-FRONTEND_URL=https://app.finsight.ai
+FRONTEND_URL=https://app.investiq.ai
 ```
 
 ### 1.3 Deployment Execution
@@ -32,7 +32,7 @@ This command will:
 3. Build the Vite frontend and serve it using Nginx (if configured in compose).
 
 ## 2. CI/CD Pipeline (GitHub Actions)
-FinSight AI utilizes GitHub Actions for continuous integration and deployment.
+InvestIQ AI utilizes GitHub Actions for continuous integration and deployment.
 
 ### 2.1 Workflows
 *   **`.github/workflows/ci.yml`**: Triggers on Pull Requests. Runs ESLint, Jest unit tests, and Supertest integration tests.
