@@ -117,7 +117,7 @@ app.use(`${API}/market`,      marketRoutes);
 app.use(`${API}/watchlist`,   watchlistRoutes);
 
 // ─── Root Health Check ─────────────────────────────────────────────────────
-app.get('/', (req, res) => {
+app.get('/api/health', (req, res) => {
   res.json({
     success : true,
     message : '🚀 InvestIQ AI API is live',
@@ -126,6 +126,18 @@ app.get('/', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+// Serve Frontend in Production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../frontend/dist')));
+  app.get('*', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../frontend', 'dist', 'index.html'));
+  });
+} else {
+  app.get('/', (req, res) => {
+    res.send('API is running in development mode...');
+  });
+}
 
 // ─── 404 & Error Handlers ─────────────────────────────────────────────────
 app.use(notFound);

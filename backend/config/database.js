@@ -9,26 +9,40 @@
 const { Sequelize } = require('sequelize');
 const logger = require('./logger');
 
-const sequelize = new Sequelize('investiq_ai', 'root', 'Varnika#02', {
-  host: '127.0.0.1',
-  port: 3306,
-  dialect: 'mysql',
-  logging: (msg) => logger.debug(msg),
-});
+let sequelize;
+
+// Automatically use SQLite in production (Render) for effortless deployment
+if (process.env.NODE_ENV === 'production') {
+  sequelize = new Sequelize({
+    dialect: 'sqlite',
+    storage: 'database.sqlite',
+    logging: false
+  });
+} else {
+  // Local MySQL for development
+  sequelize = new Sequelize('investiq_ai', 'root', 'Varnika#02', {
+    host: '127.0.0.1',
+    port: 3306,
+    dialect: 'mysql',
+    logging: (msg) => logger.debug(msg),
+  });
+}
 
 /**
- * Connect to MySQL and synchronize models.
+ * Connect to DB and synchronize models.
  */
 const connectDB = async () => {
   try {
-    // Create DB if not exists
-    const mysql = require('mysql2/promise');
-    const connection = await mysql.createConnection({ host: '127.0.0.1', port: 3306, user: 'root', password: 'Varnika#02' });
-    await connection.query('CREATE DATABASE IF NOT EXISTS investiq_ai;');
-    await connection.end();
+    // Only try to create MySQL DB if in development
+    if (process.env.NODE_ENV !== 'production') {
+      const mysql = require('mysql2/promise');
+      const connection = await mysql.createConnection({ host: '127.0.0.1', port: 3306, user: 'root', password: 'Varnika#02' });
+      await connection.query('CREATE DATABASE IF NOT EXISTS investiq_ai;');
+      await connection.end();
+    }
 
     await sequelize.authenticate();
-    logger.info('✅ MySQL connected successfully via Sequelize');
+    logger.info(`✅ Database connected successfully via Sequelize (${process.env.NODE_ENV === 'production' ? 'SQLite' : 'MySQL'})`);
 
     // Import all models so they register with sequelize before sync
     require('../models/User.model');
@@ -37,11 +51,11 @@ const connectDB = async () => {
 
     // Sync all models without alter to prevent infinite index creation bug
     await sequelize.sync();
-    logger.info('✅ MySQL models synchronized (Users, Portfolios, PortfolioAssets, PortfolioSnapshots)');
+    logger.info('✅ Database models synchronized');
     
     return sequelize;
   } catch (error) {
-    logger.error('❌ MySQL connection failed: ' + error.message);
+    logger.error('❌ Database connection failed: ' + error.message);
     process.exit(1);
   }
 };
