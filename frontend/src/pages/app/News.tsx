@@ -1,13 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Newspaper, ExternalLink, RefreshCw, Sparkles, Search, Loader2, Target, TrendingUp, TrendingDown, Clock, Activity, AlertCircle } from 'lucide-react';
-
-const newsItems = [
-  { id: 1, title: 'RBI Holds Repo Rate at 6.5% — Markets Cheer Stability', source: 'Economic Times', time: '2h ago', sentiment: 'positive', impact: 'High', summary: 'Reserve Bank of India maintains rates for third consecutive meeting, signaling end of rate hike cycle.', tags: ['HDFCBANK', 'ICICIBANK'] },
-  { id: 2, title: 'Infosys Reports Record Q4 Revenue; Beats Street Estimates', source: 'Moneycontrol', time: '4h ago', sentiment: 'positive', impact: 'Medium', summary: 'Infosys Q4 net profit rises 14.2% YoY to ₹7,975 crore, beating expectations.', tags: ['INFY', 'TCS'] },
-  { id: 3, title: 'IT Sector Faces Headwinds as US Tech Spending Slows', source: 'Business Standard', time: '6h ago', sentiment: 'negative', impact: 'Medium', summary: 'Major US tech companies announce budget cuts for IT services. Indian IT majors could see revenue impact.', tags: ['INFY', 'WIPRO'] },
-  { id: 4, title: 'Gold Hits ₹65,000 on Geopolitical Uncertainty', source: 'Mint', time: '8h ago', sentiment: 'neutral', impact: 'Low', summary: 'Gold prices rally as investors seek safe-haven assets amid Middle East tensions.', tags: ['GOLDBEES'] },
-];
 
 const sentimentColors: Record<string, string> = {
   positive : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
@@ -23,6 +16,38 @@ const impactColors: Record<string, string> = {
 
 export default function News() {
   const [filter, setFilter] = useState('all');
+  const [newsItems, setNewsItems] = useState<any[]>([]);
+  const [loadingNews, setLoadingNews] = useState(true);
+
+  useEffect(() => {
+    fetch('https://api.rss2json.com/v1/api.json?rss_url=https://economictimes.indiatimes.com/markets/rssfeeds/1977021501.cms')
+      .then(res => res.json())
+      .then(data => {
+        if (data.items) {
+          const formattedNews = data.items.slice(0, 10).map((item: any, index: number) => {
+            const sentiments = ['positive', 'negative', 'neutral'];
+            const impacts = ['High', 'Medium', 'Low'];
+            // Basic random sentiment assignment for UI demo
+            const seed = item.title.length;
+            
+            return {
+              id: index + 1,
+              title: item.title,
+              source: 'Economic Times',
+              time: new Date(item.pubDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              sentiment: sentiments[seed % sentiments.length],
+              impact: impacts[seed % impacts.length],
+              summary: item.description.replace(/<[^>]+>/g, '').slice(0, 120) + '...',
+              link: item.link,
+              tags: []
+            };
+          });
+          setNewsItems(formattedNews);
+        }
+      })
+      .catch(console.error)
+      .finally(() => setLoadingNews(false));
+  }, []);
   
   // Scanner State
   const [searchQuery, setSearchQuery] = useState('');
@@ -131,7 +156,7 @@ export default function News() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="e.g., Apple, Reliance, HDFC Bank..."
-                className="input-field pl-12 h-12 w-full text-lg"
+                className="input pl-12 h-12 w-full text-lg"
                 disabled={isScanning}
               />
             </div>
@@ -269,41 +294,53 @@ export default function News() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4">
-          {filtered.map((news, i) => (
-            <motion.div key={news.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="card-static p-5 hover:border-white/15 transition-all flex flex-col">
-              
-              <div className="flex items-start justify-between gap-4 mb-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs text-slate-500 font-semibold">{news.source}</span>
-                  <span className="text-slate-600">·</span>
-                  <span className="text-xs text-slate-500">{news.time}</span>
-                  <span className={`badge border ${sentimentColors[news.sentiment]}`}>
-                    {news.sentiment === 'positive' ? '▲' : news.sentiment === 'negative' ? '▼' : '→'} {news.sentiment}
-                  </span>
+        {loadingNews ? (
+          <div className="flex flex-col items-center justify-center py-20 text-slate-400 gap-4">
+            <Loader2 className="w-8 h-8 animate-spin text-brand-500" />
+            <p>Fetching real-time global market news...</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-4">
+            {filtered.map(news => (
+              <div key={news.id} className="card-static p-6 flex flex-col group cursor-pointer hover:border-brand-500/30">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-slate-400">{news.source}</span>
+                    <span className="w-1 h-1 rounded-full bg-slate-700" />
+                    <span className="text-sm text-slate-500 flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {news.time}</span>
+                  </div>
+                  <div className={`badge ${sentimentColors[news.sentiment]}`}>
+                    {news.sentiment === 'positive' && <TrendingUp className="w-3 h-3 mr-1" />}
+                    {news.sentiment === 'negative' && <TrendingDown className="w-3 h-3 mr-1" />}
+                    {news.sentiment === 'neutral' && <Activity className="w-3 h-3 mr-1" />}
+                    {news.sentiment}
+                  </div>
                 </div>
-                <a href="#" className="text-slate-600 hover:text-brand-400 transition-colors">
-                  <ExternalLink className="w-4 h-4" />
-                </a>
+                
+                <h3 className="text-lg font-bold text-white leading-snug mb-3 group-hover:text-brand-400 transition-colors">
+                  {news.title}
+                </h3>
+                
+                <p className="text-slate-400 text-sm leading-relaxed mb-6 flex-1">
+                  {news.summary}
+                </p>
+                
+                <div className="flex items-center justify-between mt-auto">
+                  <div className="flex gap-2">
+                    {news.tags.map((tag: string) => (
+                      <span key={tag} className="badge bg-white/5 text-slate-300 border-white/10 hover:bg-brand-500/10 hover:text-brand-400 hover:border-brand-500/30 transition-colors">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <a href={news.link} target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-white/5 text-slate-400 group-hover:bg-brand-500 group-hover:text-white transition-all">
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </div>
               </div>
-
-              <h3 className="text-sm font-bold text-white mb-2 leading-snug hover:text-brand-300 cursor-pointer transition-colors">
-                {news.title}
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed flex-1 mb-4">{news.summary}</p>
-
-              {news.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-auto">
-                  {news.tags.map(tag => (
-                    <span key={tag} className="badge-brand text-2xs">{tag}</span>
-                  ))}
-                </div>
-              )}
-            </motion.div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

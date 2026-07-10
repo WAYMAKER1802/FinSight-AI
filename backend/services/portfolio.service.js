@@ -37,7 +37,8 @@ const recalculatePortfolioMetrics = (portfolio, assets) => {
     const prevValue = a.currentValue / (1 + (a.dayChangePct || 0) / 100);
     return s + (a.currentValue - prevValue);
   }, 0);
-  const dayPnlPercent = totalCurrentValue > 0 ? (dayPnl / totalCurrentValue) * 100 : 0;
+  const totalPrevValue = totalCurrentValue - dayPnl;
+  const dayPnlPercent = totalPrevValue > 0 ? (dayPnl / totalPrevValue) * 100 : 0;
 
   // Allocation percentages
   if (totalCurrentValue > 0) {

@@ -35,8 +35,8 @@ const connectDB = async () => {
     require('../models/Portfolio.model');   // registers Portfolio, PortfolioAsset, PortfolioSnapshot
     require('../models/Watchlist.model');
 
-    // Sync all models
-    await sequelize.sync({ alter: true });
+    // Sync all models without alter to prevent infinite index creation bug
+    await sequelize.sync();
     logger.info('✅ MySQL models synchronized (Users, Portfolios, PortfolioAssets, PortfolioSnapshots)');
     
     return sequelize;

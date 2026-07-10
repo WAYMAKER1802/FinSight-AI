@@ -148,11 +148,6 @@ export default function LoginPage() {
         <p className="text-slate-400 text-sm">Sign in to your InvestIQ AI account</p>
       </div>
 
-      {/* Demo credentials hint */}
-      <div className="mb-6 p-3 rounded-xl border border-brand-500/30 bg-brand-500/10 text-xs text-brand-300">
-        <span className="font-semibold">Demo: </span>arjun@demo.com / Demo@1234
-      </div>
-
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
         {/* Email */}
         <div>

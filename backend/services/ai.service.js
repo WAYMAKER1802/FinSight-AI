@@ -10,10 +10,18 @@ const logger  = require('../config/logger');
 const prompts = require('../prompts');
 
 let openai = null;
+let genAI = null;
 try {
   if (process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.includes('your_')) {
     const OpenAI = require('openai');
     openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+} catch (_) {}
+
+try {
+  if (process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.includes('your_')) {
+    const { GoogleGenerativeAI } = require('@google/generative-ai');
+    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
   }
 } catch (_) {}
 
@@ -25,26 +33,40 @@ const DEFAULT_TEMPERATURE = parseFloat(process.env.OPENAI_TEMPERATURE)  || 0.7;
 const callAI = async (messages, options = {}) => {
   const { model = DEFAULT_MODEL, maxTokens = DEFAULT_MAX_TOKENS, temperature = DEFAULT_TEMPERATURE, jsonMode = true } = options;
 
-  if (!openai) {
-    logger.info('OpenAI not configured — using mock AI response');
+  if (!openai && !genAI) {
+    logger.info('No AI configured — using mock AI response');
     return { data: null, usage: null, elapsed: 0 };
   }
 
   const start = Date.now();
   try {
-    const completion = await openai.chat.completions.create({
-      model, messages,
-      max_tokens  : maxTokens,
-      temperature,
-      response_format: jsonMode ? { type: 'json_object' } : { type: 'text' },
-    });
-    const elapsed = Date.now() - start;
-    const content = completion.choices[0]?.message?.content;
-    if (jsonMode) {
-      try { return { data: JSON.parse(content), usage: completion.usage, elapsed }; }
-      catch (_) { return { data: { raw: content }, usage: completion.usage, elapsed }; }
+    let content = '';
+    let usage = null;
+    
+    if (genAI) {
+      const modelName = model === 'gpt-4o-mini' ? 'gemini-1.5-flash' : 'gemini-1.5-pro';
+      const geminiModel = genAI.getGenerativeModel({ model: modelName, generationConfig: { temperature, responseMimeType: jsonMode ? 'application/json' : 'text/plain' } });
+      const prompt = messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n');
+      const result = await geminiModel.generateContent(prompt);
+      const response = await result.response;
+      content = response.text();
+    } else {
+      const completion = await openai.chat.completions.create({
+        model, messages,
+        max_tokens  : maxTokens,
+        temperature,
+        response_format: jsonMode ? { type: 'json_object' } : { type: 'text' },
+      });
+      content = completion.choices[0]?.message?.content;
+      usage = completion.usage;
     }
-    return { data: content, usage: completion.usage, elapsed };
+    
+    const elapsed = Date.now() - start;
+    if (jsonMode) {
+      try { return { data: JSON.parse(content), usage, elapsed }; }
+      catch (_) { return { data: { raw: content }, usage, elapsed }; }
+    }
+    return { data: content, usage, elapsed };
   } catch (error) {
     logger.warn(`AI API error: ${error.message} — using mock fallback`);
     return { data: null, usage: null, elapsed: Date.now() - start };

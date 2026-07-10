@@ -95,8 +95,8 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
   fetchPortfolios: async () => {
     set({ loading: true, error: null });
     try {
-      const data = await portfolioApi.getAll();
-      const portfolios = data.data?.portfolios || [];
+      const res = await portfolioApi.getAll();
+      const portfolios = res.data?.data?.portfolios || [];
       const active = get().activePortfolio;
       const newActive = active
         ? portfolios.find((p: Portfolio) => p.id === active.id) || portfolios[0] || null
@@ -109,7 +109,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
 
   createPortfolio: async (data) => {
     const res = await portfolioApi.create(data);
-    const portfolio = res.data?.portfolio;
+    const portfolio = res.data?.data?.portfolio;
     set(s => ({ portfolios: [...s.portfolios, portfolio], activePortfolio: portfolio }));
     return portfolio;
   },
@@ -121,7 +121,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
 
   addAsset: async (portfolioId, asset) => {
     const res = await portfolioApi.addAsset(portfolioId, asset);
-    const updated = res.data?.portfolio;
+    const updated = res.data?.data?.portfolio;
     if (updated) {
       set(s => ({
         portfolios: s.portfolios.map(p => p.id === portfolioId ? updated : p),
@@ -132,7 +132,7 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
 
   updateAsset: async (portfolioId, assetId, updates) => {
     const res = await portfolioApi.updateAsset(portfolioId, assetId, updates);
-    const updated = res.data?.portfolio;
+    const updated = res.data?.data?.portfolio;
     if (updated) {
       set(s => ({
         portfolios: s.portfolios.map(p => p.id === portfolioId ? updated : p),
@@ -171,11 +171,11 @@ export const usePortfolioStore = create<PortfolioState>((set, get) => ({
 
   getPerformance: async (portfolioId, period = '1Y') => {
     const res = await portfolioApi.getPerformance(portfolioId, period);
-    return res.data;
+    return res.data?.data;
   },
 
   getAnalytics: async (portfolioId) => {
     const res = await portfolioApi.getAnalytics(portfolioId);
-    return res.data;
+    return res.data?.data;
   },
 }));

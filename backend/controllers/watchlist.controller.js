@@ -1,5 +1,6 @@
 const Watchlist = require('../models/Watchlist.model');
-const { AppError, sendSuccess } = require('../middleware/errorHandler');
+const { AppError } = require('../middleware/errorHandler');
+const { sendSuccess } = require('../utils/response');
 
 // GET /watchlist
 exports.getWatchlist = async (req, res, next) => {

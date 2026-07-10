@@ -82,7 +82,7 @@ export default function Invest() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search for stocks, ETFs (e.g. Reliance, NiftyBees)..." 
-          className="input-field pl-12 h-14 w-full text-lg shadow-xl"
+          className="input pl-12 h-14 w-full text-lg shadow-xl"
         />
       </div>
 
@@ -167,7 +167,7 @@ export default function Invest() {
                       step="1"
                       value={quantity}
                       onChange={(e) => setQuantity(e.target.value)}
-                      className="input-field w-full text-lg font-numeric py-3"
+                      className="input w-full text-lg font-numeric py-3"
                       required
                     />
                   </div>

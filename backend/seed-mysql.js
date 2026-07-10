@@ -7,8 +7,11 @@ async function seedMySQL() {
     await sequelize.authenticate();
     console.log('Connected to MySQL.');
 
-    await User.destroy({ where: {} });
+    const Watchlist = require('./models/Watchlist.model');
+    await Watchlist.destroy({ where: {} });
+    await PortfolioAsset.destroy({ where: {} });
     await Portfolio.destroy({ where: {} });
+    await User.destroy({ where: {} });
 
     const user = await User.create({
       name: 'Arjun Sharma',

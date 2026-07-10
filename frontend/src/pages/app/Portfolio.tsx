@@ -247,6 +247,11 @@ export default function Portfolio() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { fetchPortfolios(); }, []);
+  useEffect(() => {
+    if (activePortfolio?.id && !priceRefreshing) {
+      refreshPrices(activePortfolio.id).catch(() => {});
+    }
+  }, [activePortfolio?.id]);
 
   const p = activePortfolio;
   const assets = (p?.assets || [])

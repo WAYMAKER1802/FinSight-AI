@@ -1,13 +1,33 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { AdvancedRealTimeChart } from 'react-ts-tradingview-widgets';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bell, Bookmark, Settings, Info } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { usePortfolioStore } from '@/store/portfolioStore';
+import { marketApi } from '@/api/market.api';
 
 declare global {
   interface Window {
     TradingView: any;
   }
 }
+
+const TradingViewChart = React.memo(({ symbol }: { symbol: string }) => {
+  return (
+    <div className="w-full h-full">
+      <AdvancedRealTimeChart 
+        key={symbol}
+        symbol={symbol} 
+        theme="dark" 
+        autosize 
+        hide_legend={true}
+        allow_symbol_change={false}
+        hide_top_toolbar={false}
+        save_image={false}
+      />
+    </div>
+  );
+});
 
 export default function StockDetails() {
   const { symbol } = useParams();
@@ -19,54 +39,68 @@ export default function StockDetails() {
   const [priceLimit, setPriceLimit] = useState('');
   const [isPlacing, setIsPlacing] = useState(false);
 
-  // Fallback to CUPID if no symbol is provided
-  const stockSymbol = symbol ? symbol.toUpperCase() : 'CUPID';
-  const exchangePrefix = 'BSE'; // or NSE
-  const fullSymbol = `${exchangePrefix}:${stockSymbol}`;
+  const { activePortfolio, addAsset } = usePortfolioStore();
+
+  const [quote, setQuote] = useState<any>(null);
 
   useEffect(() => {
-    // Load TradingView widget script
-    const script = document.createElement('script');
-    script.src = 'https://s3.tradingview.com/tv.js';
-    script.async = true;
-    script.onload = () => {
-      if (typeof window.TradingView !== 'undefined' && chartContainerRef.current) {
-        new window.TradingView.widget({
-          autosize: true,
-          symbol: fullSymbol,
-          interval: 'D',
-          timezone: 'Asia/Kolkata',
-          theme: 'dark', // Using dark to match InvestIQ theme, though Groww uses light
-          style: '3', // Area chart
-          locale: 'en',
-          enable_publishing: false,
-          backgroundColor: 'transparent',
-          gridColor: 'rgba(255, 255, 255, 0.05)',
-          hide_top_toolbar: true,
-          hide_legend: true,
-          save_image: false,
-          container_id: chartContainerRef.current.id,
-        });
-      }
-    };
-    document.head.appendChild(script);
+    // If portfolio is empty, fetch it (just in case they navigate here directly)
+    usePortfolioStore.getState().fetchPortfolios();
+  }, []);
 
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, [fullSymbol]);
+  // Fallback to CUPID if no symbol is provided
+  const stockSymbol = symbol ? symbol.toUpperCase() : 'CUPID';
+  // Prefix with BSE: so TradingView can correctly identify Indian stocks
+  const fullSymbol = 'BSE:' + stockSymbol;
 
-  const handlePlaceOrder = () => {
+  useEffect(() => {
+    const fetchQuote = () => {
+      // Pass the raw stockSymbol without BSE: since backend Yahoo search handles it
+      marketApi.getQuote(stockSymbol)
+        .then(res => setQuote(res.data?.data?.quote || res.data?.quote))
+        .catch(() => {});
+    };
+
+    // Initial fetch
+    fetchQuote();
+    
+    // Poll every 5 seconds
+    const interval = setInterval(fetchQuote, 5000);
+
+    return () => clearInterval(interval);
+  }, [fullSymbol, stockSymbol]);
+
+  const handlePlaceOrder = async () => {
     if (!qty) {
       toast.error('Please enter quantity');
       return;
     }
+    if (orderType === 'SELL') {
+      toast.error('Selling is currently not implemented in this prototype!');
+      return;
+    }
+    if (!activePortfolio) {
+      toast.error('No active portfolio found! Create one in the Portfolio tab.');
+      return;
+    }
+    
     setIsPlacing(true);
-    setTimeout(() => {
+    try {
+      await addAsset(activePortfolio.id, {
+        symbol: stockSymbol,
+        name: stockSymbol, // Fallback, would be nice to get real name
+        type: 'stock',
+        quantity: parseFloat(qty),
+        avgBuyPrice: parseFloat(priceLimit || quote?.currentPrice || '210.01'),
+        sector: 'Unknown',
+      });
       toast.success(`${orderType} order placed for ${qty} shares of ${stockSymbol}`);
-      setIsPlacing(false);
       setQty('');
-    }, 1500);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Failed to place order');
+    } finally {
+      setIsPlacing(false);
+    }
   };
 
   return (
@@ -94,11 +128,19 @@ export default function StockDetails() {
               <div>
                 <h1 className="text-3xl font-black font-display text-white">{stockSymbol}</h1>
                 <div className="text-sm text-slate-400 mt-1 uppercase font-semibold tracking-wider">
-                  {stockSymbol} • {exchangePrefix}
+                  {stockSymbol} • EQUITY
                 </div>
                 <div className="mt-4 flex items-baseline gap-3">
-                  <span className="text-3xl font-black font-numeric text-white">₹210.01</span>
-                  <span className="text-emerald-400 font-semibold font-numeric">+13.03 (6.61%) <span className="text-slate-500 text-sm">1D</span></span>
+                  <span className="text-3xl font-black font-numeric text-white">
+                    ₹{quote ? quote.currentPrice.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '210.01'}
+                  </span>
+                  {quote ? (
+                    <span className={`font-semibold font-numeric ${quote.dayChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      {quote.dayChange > 0 ? '+' : ''}{quote.dayChange} ({quote.dayChange > 0 ? '+' : ''}{quote.dayChangePct}%) <span className="text-slate-500 text-sm">1D</span>
+                    </span>
+                  ) : (
+                    <span className="text-emerald-400 font-semibold font-numeric">+13.03 (6.61%) <span className="text-slate-500 text-sm">1D</span></span>
+                  )}
                 </div>
               </div>
             </div>
@@ -115,7 +157,7 @@ export default function StockDetails() {
 
           {/* TradingView Chart Container */}
           <div className="card-static p-1 h-[500px]">
-            <div id={`tv_chart_${stockSymbol}`} ref={chartContainerRef} className="w-full h-full" />
+            <TradingViewChart symbol={fullSymbol} />
           </div>
         </div>
 
@@ -169,7 +211,7 @@ export default function StockDetails() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <label className="text-sm font-semibold text-slate-300 flex items-center gap-1">
-                    Qty {exchangePrefix} <Info className="w-3 h-3 text-slate-500" />
+                    Qty NSE <Info className="w-3 h-3 text-slate-500" />
                   </label>
                   <input 
                     type="number" 

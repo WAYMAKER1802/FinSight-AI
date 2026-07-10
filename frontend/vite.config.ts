@@ -1,10 +1,37 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
-// https://vitejs.dev/config/
+// https://vitejs.dev/config/ (Restarted to pick up tradingview widgets)
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      devOptions: { enabled: true },
+      manifest: {
+        name: 'InvestIQ - AI Portfolio Advisor',
+        short_name: 'InvestIQ',
+        description: 'AI-driven financial planning and portfolio management.',
+        theme_color: '#0f172a',
+        background_color: '#0f172a',
+        display: 'standalone',
+        icons: [
+          {
+            src: '/pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: '/pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
+      }
+    })
+  ],
   resolve: {
     alias: {
       '@'          : path.resolve(__dirname, './src'),
@@ -23,7 +50,7 @@ export default defineConfig({
     open : true,
     proxy: {
       '/api': {
-        target     : 'http://localhost:5000',
+        target     : 'http://localhost:5005',
         changeOrigin: true,
         secure     : false,
       },

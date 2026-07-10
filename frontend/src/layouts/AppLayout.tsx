@@ -154,7 +154,7 @@ export default function AppLayout() {
         {/* Collapse Toggle */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="absolute -right-3 top-20 w-6 h-6 rounded-full bg-dark-800 border border-white/10 flex items-center justify-center hover:border-brand-500/40 transition-all z-20"
+          className="absolute -right-3 top-32 w-6 h-6 rounded-full bg-dark-800 border border-white/10 flex items-center justify-center hover:border-brand-500/40 transition-all z-20"
         >
           <ChevronRight className={`w-3 h-3 text-slate-400 transition-transform ${collapsed ? '' : 'rotate-180'}`} />
         </button>
@@ -180,7 +180,7 @@ export default function AppLayout() {
         <TickerTape />
 
         {/* Top Bar */}
-        <header className="h-14 border-b border-white/5 bg-dark-900/50 backdrop-blur-sm flex items-center justify-between px-4 flex-shrink-0 gap-4">
+        <header className="relative z-50 h-14 border-b border-white/5 bg-dark-900/50 backdrop-blur-sm flex items-center justify-between px-4 flex-shrink-0 gap-4">
           <div className="flex items-center gap-6 flex-1">
             <button onClick={() => setMobileOpen(true)} className="md:hidden btn-icon p-2">
               <Menu className="w-5 h-5" />

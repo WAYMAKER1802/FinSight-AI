@@ -121,10 +121,10 @@ export default function Analytics() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                  <XAxis dataKey={history.length > 0 ? 'month' : 'month'} tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey={history.length > 0 ? 'date' : 'month'} tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fill: '#64748b', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <Tooltip contentStyle={{ background: 'rgba(15,23,42,0.95)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.1)', fontSize: 12 }} />
-                  <Area type="monotone" dataKey="value" stroke="#667eea" strokeWidth={2} fill="url(#growthGrad)" />
+                  <Area type="monotone" dataKey={history.length > 0 ? 'value' : 'portfolio'} stroke="#667eea" strokeWidth={2} fill="url(#growthGrad)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>

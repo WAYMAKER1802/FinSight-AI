@@ -1,4 +1,5 @@
 /**
+ * Rate Limiting Middleware (Updated For Restart 3)
  * Rate Limiting Middleware
  * ─────────────────────────
  * Tiered rate limiting: general API, auth, and AI endpoints.
@@ -18,7 +19,7 @@ const rateLimitMessage = (type) => ({
 // ─── General API Limiter ───────────────────────────────────────────────────
 const apiLimiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS, 10) || 15 * 60 * 1000,
-  max     : parseInt(process.env.RATE_LIMIT_MAX_REQUESTS, 10) || 100,
+  max     : parseInt(process.env.RATE_LIMIT_MAX_REQUESTS, 10) || 5000,
   standardHeaders: true,
   legacyHeaders  : false,
   message: rateLimitMessage('API'),

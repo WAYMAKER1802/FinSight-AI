@@ -9,6 +9,8 @@
 'use strict';
 
 const axios  = require('axios');
+const YahooFinance = require('yahoo-finance2').default;
+const yahooFinance = new YahooFinance();
 const logger = require('../config/logger');
 
 const FINNHUB_KEY   = process.env.FINNHUB_API_KEY;
@@ -17,7 +19,7 @@ const TWELVE_KEY    = process.env.TWELVE_DATA_API_KEY;
 
 // ─── In-memory cache ──────────────────────────────────────────────────────
 const cache = new Map();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 5000; // 5 seconds for live fluctuating demo
 
 const getCached = (key) => {
   const entry = cache.get(key);
@@ -28,38 +30,38 @@ const setCache = (key, data) => cache.set(key, { data, ts: Date.now() });
 
 // ─── Seed prices for realistic mock data ──────────────────────────────────
 const MOCK_BASE_PRICES = {
-  RELIANCE: 2790, INFY: 1625, HDFCBANK: 1720, TCS: 3850, WIPRO: 465,
-  ICICIBANK: 1120, KOTAKBANK: 1850, AXISBANK: 1200, BAJFINANCE: 7100,
-  ADANIENT: 2450, MARUTI: 12800, SUNPHARMA: 1580, HDFC: 1695, LTIM: 5200,
-  TECHM: 1560, ONGC: 280, BPCL: 380, COALINDIA: 450, ITC: 475, SBIN: 820,
-  BTCUSDT: 6800000, ETHUSDT: 320000, GOLDBEES: 52, NIFTYBEES: 245,
-  MOTHERSON: 145, ZOMATO: 230, PAYTM: 340, NYKAA: 185, IRFC: 195,
-  TATAMOTORS: 960, POWERGRID: 340, NTPC: 385, JSWSTEEL: 870, HINDALCO: 680,
-  GRASIM: 2650, DRREDDY: 6200, CIPLA: 1520, DIVISLAB: 3800, APOLLOHOSP: 6400,
-  BAJAJFINSV: 1620, SBILIFE: 1750, HDFCLIFE: 620,
+  RELIANCE: 1307.8, INFY: 1068, HDFCBANK: 824.95, TCS: 2069, WIPRO: 175.46,
+  ICICIBANK: 1401.2, KOTAKBANK: 377.6, AXISBANK: 1323.7, BAJFINANCE: 1020.5,
+  ADANIENT: 3157.3, MARUTI: 13854, SUNPHARMA: 1935.5, LTIM: 6200,
+  TECHM: 1454.8, ONGC: 244.96, BPCL: 309.75, COALINDIA: 429.3, ITC: 281.75,
+  SBIN: 1036, MOTHERSON: 143.19, ZOMATO: 230, PAYTM: 1341.8, NYKAA: 330.1,
+  IRFC: 89.9, TATAMOTORS: 960, POWERGRID: 283.1, NTPC: 344.55,
+  JSWSTEEL: 1245.4, HINDALCO: 967.45, GRASIM: 3213.6, DRREDDY: 1244.3,
+  CIPLA: 1439.4, DIVISLAB: 6836, APOLLOHOSP: 8841, BAJAJFINSV: 1916,
+  SBILIFE: 1862.9, HDFCLIFE: 567.7, CUPID: 212.24, ITDC: 716.8,
+  PCJEWELLER: 9.99, JINDRILL: 603.05, TATASTEEL: 191.19
 };
 
 // ─── Generate realistic mock quote ────────────────────────────────────────
 const mockQuote = (symbol) => {
-  const base = MOCK_BASE_PRICES[symbol.toUpperCase()] || (500 + Math.abs(symbol.charCodeAt(0) * 37 % 4000));
-  const dayChangePct = (Math.random() * 4 - 2);                        // -2% to +2%
-  const currentPrice = Math.round(base * (1 + dayChangePct / 100) * 100) / 100;
-  const dayChange    = Math.round((currentPrice - base) * 100) / 100;
+  const base = MOCK_BASE_PRICES[symbol.toUpperCase()] || 150.0;
+  const currentPrice = base;
+  const dayChange = 0;
 
   return {
     symbol,
     currentPrice,
     prevClose   : base,
-    open        : Math.round(base * (1 + (Math.random() * 0.01 - 0.005)) * 100) / 100,
-    high        : Math.round(Math.max(currentPrice, base) * (1 + Math.random() * 0.008) * 100) / 100,
-    low         : Math.round(Math.min(currentPrice, base) * (1 - Math.random() * 0.008) * 100) / 100,
-    volume      : Math.floor(100000 + Math.random() * 5000000),
+    open        : base,
+    high        : base,
+    low         : base,
+    volume      : 1000000,
     dayChange,
-    dayChangePct: Math.round(dayChangePct * 100) / 100,
-    high52      : Math.round(base * (1.25 + Math.random() * 0.1) * 100) / 100,
-    low52       : Math.round(base * (0.65 + Math.random() * 0.1) * 100) / 100,
-    marketCap   : Math.floor(base * (1000000 + Math.random() * 50000000)),
-    peRatio     : Math.round((15 + Math.random() * 35) * 10) / 10,
+    dayChangePct: 0,
+    high52      : base * 1.25,
+    low52       : base * 0.65,
+    marketCap   : base * 10000000,
+    peRatio     : 25,
     source      : 'mock',
     timestamp   : new Date().toISOString(),
   };
@@ -133,13 +135,44 @@ const fetchAlphaVantage = async (symbol) => {
   }
 };
 
+// ─── Yahoo Finance fetcher ────────────────────────────────────────────────
+const fetchYahooFinance = async (symbol) => {
+  try {
+    const formattedSymbol = symbol.endsWith('.NS') || symbol.endsWith('.BO') ? symbol : `${symbol}.NS`;
+    const quote = await yahooFinance.quote(formattedSymbol);
+    if (!quote || !quote.regularMarketPrice) return null;
+    
+    return {
+      symbol,
+      currentPrice : quote.regularMarketPrice,
+      prevClose    : quote.regularMarketPreviousClose,
+      open         : quote.regularMarketOpen,
+      high         : quote.regularMarketDayHigh,
+      low          : quote.regularMarketDayLow,
+      volume       : quote.regularMarketVolume,
+      dayChange    : quote.regularMarketChange,
+      dayChangePct : quote.regularMarketChangePercent,
+      high52       : quote.fiftyTwoWeekHigh,
+      low52        : quote.fiftyTwoWeekLow,
+      marketCap    : quote.marketCap,
+      peRatio      : quote.trailingPE || quote.forwardPE,
+      source       : 'yahoo-finance',
+      timestamp    : new Date().toISOString(),
+    };
+  } catch (e) {
+    logger.debug(`Yahoo Finance failed for ${symbol}: ${e.message}`);
+    return null;
+  }
+};
+
 // ─── Main quote fetcher ───────────────────────────────────────────────────
 const fetchQuote = async (symbol) => {
   const cacheKey = `quote:${symbol}`;
   const cached = getCached(cacheKey);
   if (cached) return cached;
 
-  let data = await fetchFinnhub(symbol);
+  let data = await fetchYahooFinance(symbol);
+  if (!data) data = await fetchFinnhub(symbol);
   if (!data) data = await fetchAlphaVantage(symbol);
   if (!data) data = mockQuote(symbol);
 

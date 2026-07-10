@@ -38,6 +38,7 @@ export default function GlobalSearch() {
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && query.trim()) {
+      e.preventDefault(); // Stop Enter from triggering other buttons/events
       // If matches a suggestion, use that symbol, otherwise just use the query as symbol
       const match = suggestions.find(s => 
         s.symbol.toLowerCase() === query.toLowerCase() || 
