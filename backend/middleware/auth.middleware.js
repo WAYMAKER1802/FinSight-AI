@@ -125,7 +125,7 @@ const requirePremium = (req, res, next) => {
  * @param {string} userId
  */
 const signAccessToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: userId }, process.env.JWT_SECRET || 'default_jwt_secret_investiq_2026', {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   });
 };
@@ -135,7 +135,7 @@ const signAccessToken = (userId) => {
  * @param {string} userId
  */
 const signRefreshToken = (userId) => {
-  return jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET, {
+  return jwt.sign({ id: userId }, process.env.JWT_REFRESH_SECRET || 'default_refresh_secret_investiq_2026', {
     expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
   });
 };
