@@ -146,4 +146,9 @@ Object.defineProperty(User.prototype, 'isPremium', {
   }
 });
 
+User.prototype.toSafeObject = function() {
+  const { password, mPin, mfaSecret, refreshToken, passwordResetToken, emailVerificationToken, ...safeUser } = this.toJSON();
+  return safeUser;
+};
+
 module.exports = User;
