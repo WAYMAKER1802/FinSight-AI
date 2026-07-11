@@ -152,7 +152,7 @@ exports.verifyMPin = async (req, res, next) => {
     const { tempToken, pin } = req.body;
     if (!tempToken || !pin) return next(new AppError('Token and PIN are required.', 400));
 
-    const decoded = jwt.verify(tempToken, process.env.JWT_SECRET || 'secret');
+    const decoded = jwt.verify(tempToken, process.env.JWT_SECRET || 'default_jwt_secret_investiq_2026');
     if (!decoded.mfa) return next(new AppError('Invalid token for MFA.', 401));
 
     const user = await User.findByPk(decoded.id);
@@ -284,7 +284,7 @@ exports.refreshToken = async (req, res, next) => {
       return next(new AppError('Refresh token not provided.', 401));
     }
 
-    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'default_refresh_secret_investiq_2026');
     const user    = await User.findByPk(decoded.id);
 
     if (!user || !user.isActive) {
