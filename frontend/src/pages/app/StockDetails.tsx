@@ -1,39 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { AdvancedRealTimeChart } from 'react-ts-tradingview-widgets';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Bell, Bookmark, Settings, Info } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { usePortfolioStore } from '@/store/portfolioStore';
 import { marketApi } from '@/api/market.api';
-
-declare global {
-  interface Window {
-    TradingView: any;
-  }
-}
-
-const TradingViewChart = React.memo(({ symbol }: { symbol: string }) => {
-  return (
-    <div className="w-full h-full">
-      <AdvancedRealTimeChart 
-        key={symbol}
-        symbol={symbol} 
-        theme="dark" 
-        width="100%"
-        height="100%"
-        hide_legend={true}
-        allow_symbol_change={false}
-        hide_top_toolbar={false}
-        save_image={false}
-      />
-    </div>
-  );
-});
+import LiveStockChart from '@/components/charts/LiveStockChart';
 
 export default function StockDetails() {
   const { symbol } = useParams();
   const navigate = useNavigate();
-  const chartContainerRef = useRef<HTMLDivElement>(null);
   const [orderType, setOrderType] = useState<'BUY' | 'SELL'>('BUY');
   const [deliveryType, setDeliveryType] = useState<'Delivery' | 'Intraday' | 'MTF'>('Delivery');
   const [qty, setQty] = useState('');
@@ -49,27 +24,20 @@ export default function StockDetails() {
     usePortfolioStore.getState().fetchPortfolios();
   }, []);
 
-  // Fallback to CUPID if no symbol is provided
-  const stockSymbol = symbol ? symbol.toUpperCase() : 'CUPID';
-  // Prefix with NSE: so TradingView can correctly identify Indian stocks
-  const fullSymbol = 'NSE:' + stockSymbol;
+  // Fallback to RELIANCE if no symbol is provided
+  const stockSymbol = symbol ? symbol.toUpperCase() : 'RELIANCE';
 
   useEffect(() => {
     const fetchQuote = () => {
-      // Pass the raw stockSymbol without BSE: since backend Yahoo search handles it
       marketApi.getQuote(stockSymbol)
         .then(res => setQuote(res.data?.data?.quote || res.data?.quote))
         .catch(() => {});
     };
-
-    // Initial fetch
     fetchQuote();
-    
-    // Poll every 5 seconds
-    const interval = setInterval(fetchQuote, 5000);
-
+    // Poll every 2 seconds for live ticking feel
+    const interval = setInterval(fetchQuote, 2000);
     return () => clearInterval(interval);
-  }, [fullSymbol, stockSymbol]);
+  }, [stockSymbol]);
 
   const handlePlaceOrder = async () => {
     if (!qty) {
@@ -156,9 +124,13 @@ export default function StockDetails() {
             </div>
           </div>
 
-          {/* TradingView Chart Container */}
-          <div className="card-static p-1 h-[500px]">
-            <TradingViewChart symbol={fullSymbol} />
+          {/* Live Chart — powered by lightweight-charts (free & open source) */}
+          <div className="card-static h-[460px] overflow-hidden">
+            <LiveStockChart
+              symbol={stockSymbol}
+              currentPrice={quote?.currentPrice}
+              basePrice={quote?.prevClose}
+            />
           </div>
         </div>
 

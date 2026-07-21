@@ -19,7 +19,7 @@ const TWELVE_KEY    = process.env.TWELVE_DATA_API_KEY;
 
 // ─── In-memory cache ──────────────────────────────────────────────────────
 const cache = new Map();
-const CACHE_TTL = 5000; // 5 seconds for live fluctuating demo
+const CACHE_TTL = 2000; // 2 seconds — matches frontend polling interval
 
 const getCached = (key) => {
   const entry = cache.get(key);
