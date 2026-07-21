@@ -53,6 +53,21 @@ const connectDB = async () => {
     await sequelize.sync();
     logger.info('✅ Database models synchronized');
     
+    // Auto-seed admin user if it doesn't exist (because Render wipes SQLite on sleep)
+    const User = require('../models/User.model');
+    const existingUser = await User.findOne({ where: { email: 'varnikaa.1802@gmail.com' } });
+    if (!existingUser) {
+      await User.create({
+        name: 'Varnika Agarwal',
+        email: 'varnikaa.1802@gmail.com',
+        password: 'Varnika#0210',
+        role: 'admin',
+        riskProfile: 'moderate',
+        emailVerified: true
+      });
+      logger.info('✅ Auto-seeded admin account varnikaa.1802@gmail.com');
+    }
+    
     return sequelize;
   } catch (error) {
     logger.error('❌ Database connection failed: ' + error.message);
