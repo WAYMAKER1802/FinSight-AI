@@ -45,19 +45,27 @@ const MOCK_BASE_PRICES = {
 // ─── Generate realistic mock quote ────────────────────────────────────────
 const mockQuote = (symbol) => {
   const base = MOCK_BASE_PRICES[symbol.toUpperCase()] || 150.0;
-  const currentPrice = base;
-  const dayChange = 0;
+  
+  // Use a deterministic but changing offset based on time (changes every 5 seconds)
+  const timeStep = Math.floor(Date.now() / 5000);
+  // Pseudo-random fluctuation between -1% and +1%
+  const randomSeed = Math.sin(timeStep * base) * 10000;
+  const fluctuationPct = (randomSeed - Math.floor(randomSeed)) * 2 - 1; // -1 to +1
+  
+  const currentPrice = Number((base + (base * fluctuationPct * 0.01)).toFixed(2));
+  const dayChange = Number((currentPrice - base).toFixed(2));
+  const dayChangePct = Number(((dayChange / base) * 100).toFixed(2));
 
   return {
     symbol,
     currentPrice,
     prevClose   : base,
     open        : base,
-    high        : base,
-    low         : base,
-    volume      : 1000000,
+    high        : Number((base * 1.02).toFixed(2)),
+    low         : Number((base * 0.98).toFixed(2)),
+    volume      : 1000000 + Math.floor(Math.abs(fluctuationPct) * 500000),
     dayChange,
-    dayChangePct: 0,
+    dayChangePct,
     high52      : base * 1.25,
     low52       : base * 0.65,
     marketCap   : base * 10000000,

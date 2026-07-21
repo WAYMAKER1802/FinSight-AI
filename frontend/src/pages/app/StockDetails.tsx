@@ -50,8 +50,8 @@ export default function StockDetails() {
 
   // Fallback to CUPID if no symbol is provided
   const stockSymbol = symbol ? symbol.toUpperCase() : 'CUPID';
-  // Prefix with BSE: so TradingView can correctly identify Indian stocks
-  const fullSymbol = 'BSE:' + stockSymbol;
+  // Prefix with NSE: so TradingView can correctly identify Indian stocks
+  const fullSymbol = 'NSE:' + stockSymbol;
 
   useEffect(() => {
     const fetchQuote = () => {
