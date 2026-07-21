@@ -19,7 +19,8 @@ const TradingViewChart = React.memo(({ symbol }: { symbol: string }) => {
         key={symbol}
         symbol={symbol} 
         theme="dark" 
-        autosize 
+        width="100%"
+        height="100%"
         hide_legend={true}
         allow_symbol_change={false}
         hide_top_toolbar={false}
